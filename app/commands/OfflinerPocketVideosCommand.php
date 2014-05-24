@@ -69,7 +69,7 @@ class OfflinerPocketVideosCommand extends Command {
 		foreach ( $result->list as $r )
 		{
 			// 0 means not deleted or archived
-			if ( !$r->status != 0 )
+			if ( $r->status != 0 )
 			{
 				continue;
 			}
