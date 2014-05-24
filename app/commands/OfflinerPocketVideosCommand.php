@@ -41,20 +41,22 @@ class OfflinerPocketVideosCommand extends Command {
 
 		$since = \OfflinerVideo::max('pocket_since');
 
-		$since_des = ( $since ) ? date( 'm/d/Y h:i:s A', $since ) : 'the beginning of time';
-
 		if ( $since )
 		{
 			$pocket_params = [
 				'since' => $since,
 			];
+
+			$since_des = date( 'm/d/Y h:i:s A', $since );
 		}
 		else
 		{
 			$pocket_params = [];
+
+			$since_des = 'the beginning of time';
 		}
 
-		$this->info( 'Getting video from Pocket since ' . $since_des . '...' );
+		$this->info( 'Getting videos from Pocket since ' . $since_des . '...' );
 
 		$result = $pocket->getVideos( $pocket_params );
 
@@ -66,6 +68,12 @@ class OfflinerPocketVideosCommand extends Command {
 
 		foreach ( $result->list as $r )
 		{
+			// 0 means not deleted or archived
+			if ( !$r->status != 0 )
+			{
+				continue;
+			}
+
 			foreach ( $r->videos as $video )
 			{
 				if ( str_contains( $video->src, 'youtube' ) && !empty( $video->vid ) )
