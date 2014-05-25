@@ -89,6 +89,12 @@ class OfflinerPushVideosCommand extends Command {
 			$video->video_error = TRUE;
 			$video->video_error_message = $video_info['error_message'];
 			$video->video_error_code = $video_info['error_code'];
+
+			$notification_message = 'There was a problem getting the following video: '
+									. 'https://www.youtube.com/watch?v=' . $video->video_id . '</p>'
+									. '<p><strong>' . $video_info['error_message'] . '</strong>';
+
+			\TellEm::error( 'Problem Offlining Video', $notification_message );
 		}
 
 		$video->save();
