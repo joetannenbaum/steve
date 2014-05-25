@@ -12,6 +12,7 @@
 		td.steve-image {
 			width: 214px;
 			padding: 0;
+			vertical-align: bottom;
 		}
 		td.steve-message {
 			background: #eaeaea;
