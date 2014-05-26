@@ -40,7 +40,7 @@ class Laracasts {
 
 		$id = last( $matches );
 
-		$res = $this->client->head( 'https://laracasts.com/downloads/' . $id . '?type=lesson', [
+		$res = $this->client->get( 'https://laracasts.com/downloads/' . $id . '?type=lesson', [
 				'cookies' => TRUE,
 			]);
 
