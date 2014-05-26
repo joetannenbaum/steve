@@ -15,4 +15,9 @@ class OfflinerVideo extends Eloquent {
 		'pusher_id',
 	];
 
+	public function scopeUnpushed( $query )
+	{
+		return $query->whereNull('pusher_id')->where('video_error', FALSE);
+	}
+
 }
