@@ -78,21 +78,24 @@ class OfflinerPocketVideosCommand extends Command {
 			{
 				if ( str_contains( $video->src, 'youtube' ) && !empty( $video->vid ) )
 				{
-					$record = \OfflinerVideo::where('video_source', 'youtube')->where('video_id', $video->vid)->first();
+					$record = \OfflinerVideo::firstOrNew([
+							'video_source' => 'youtube',
+							'video_id'     => $video->vid,
+						]);
 
-					if ( !empty( $record ) )
+					if ( $record->id )
 					{
 						continue;
 					}
 
 					$this->info( 'Logging video <comment>' . $video->vid . '</comment>...' );
 
-					\OfflinerVideo::create([
-							'video_source' => 'youtube',
-							'video_id'     => $video->vid,
+					$record->fill([
 							'pocket_id'    => $r->item_id,
 							'pocket_since' => $result->since,
 						]);
+
+					$record->save();
 				}
 			}
 		}

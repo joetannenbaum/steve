@@ -41,9 +41,7 @@ class OfflinerPushVideosCommand extends Command {
 
 		$this->info( 'Checking for unpushed videos...' );
 
-		$video = \OfflinerVideo::whereNull('pusher_id')
-								->where('video_source', 'youtube')
-								->where('video_error', FALSE)
+		$video = \OfflinerVideo::unpushed()
 								->orderBy('id')
 								->first();
 
@@ -53,8 +51,47 @@ class OfflinerPushVideosCommand extends Command {
 			die();
 		}
 
-		$youtube = new \Steve\External\YouTube;
 		$pusher  = new \Steve\External\PushBullet;
+
+		switch ( $video->video_source )
+		{
+			case 'youtube':
+
+				$video = $this->handleYouTube( $video );
+
+			break;
+		}
+
+		if ( !$video->video_url )
+		{
+			$this->error('No video URL found, killing it');
+			die();
+		}
+
+		$this->info( 'Pushing ' . $video->video_url . ' offline...' );
+
+		$push_response = $pusher->pushFile( $video->video_title, $video->video_url );
+
+		if ( array_get( $push_response, 'iden' ) )
+		{
+			$this->info( 'Updating video record video...' );
+
+			$video->pusher_id = $push_response['iden'];
+
+		}
+		else
+		{
+			$this->error('Pushing failed: ' . json_encode( $push_response ) );
+		}
+
+		$video->save();
+
+		$this->comment( 'Donezo. Enjoy.' );
+	}
+
+	private function handleYouTube( $video )
+	{
+		$youtube = new \Steve\External\YouTube;
 
 		$this->info( 'Getting video info for video ID ' . $video->video_id );
 
@@ -62,25 +99,8 @@ class OfflinerPushVideosCommand extends Command {
 
 		if ( array_get( $video_info, 'title' ) )
 		{
-			$file_url  = $video_info['best_format']['url'];
-			$file_name = $video_info['title'];
-
-			$this->info( 'Pushing ' . $file_name . ' offline...' );
-
-			$push_response = $pusher->pushFile( $file_name, $file_url );
-
-			if ( array_get( $push_response, 'iden' ) )
-			{
-				$this->info( 'Updating video record video...' );
-
-				$video->video_title = $file_name;
-				$video->pusher_id = $push_response['iden'];
-
-			}
-			else
-			{
-				$this->error('Pushing failed: ' . json_encode( $push_response ) );
-			}
+			$video->video_url   = $video_info['best_format']['url'];
+			$video->video_title = $video_info['title'];
 		}
 		else
 		{
@@ -97,9 +117,7 @@ class OfflinerPushVideosCommand extends Command {
 			\TellEm::error( 'Problem Offlining Video', $notification_message );
 		}
 
-		$video->save();
-
-		$this->comment( 'Donezo. Enjoy.' );
+		return $video;
 	}
 
 	/**
