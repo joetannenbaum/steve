@@ -51,7 +51,7 @@ class OfflinerPushVideosCommand extends Command {
 			die();
 		}
 
-		$pusher  = new \Steve\External\PushBullet;
+		$pusher  = App::make('Steve\External\PushBullet');
 
 		switch ( $video->video_source )
 		{
@@ -68,7 +68,7 @@ class OfflinerPushVideosCommand extends Command {
 			die();
 		}
 
-		$this->info( 'Pushing ' . $video->video_url . ' offline...' );
+		$this->info( 'Pushing <comment>' . $video->video_title . '</comment> offline...' );
 
 		$push_response = $pusher->pushFile( $video->video_title, $video->video_url );
 
