@@ -32,6 +32,11 @@ App::bind('tellem', function()
     return new \Steve\Notify\TellEm;
 });
 
+App::bind('css_inliner', function()
+{
+    return new \TijsVerkoyen\CssToInlineStyles\CssToInlineStyles;
+});
+
 /*
 |--------------------------------------------------------------------------
 | Application Error Logger
