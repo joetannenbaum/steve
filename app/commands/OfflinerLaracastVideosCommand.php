@@ -42,33 +42,34 @@ class OfflinerLaracastVideosCommand extends Command {
 
 		$this->info( 'Checking Laracasts feed...' );
 
-		$feed = $laracasts->getFeed();
+		$new_lessons = $laracasts->getNewLessons();
 
 		$new_video = FALSE;
 
-		foreach ( $feed->entry as $entry )
+		foreach ( $new_lessons as $url )
 		{
+			$lesson_urls = $laracasts->getFileUrls( $url );
 
-			$video_id = (string) $entry->id;
-			$title    = (string) $entry->title;
-
-			$record = \OfflinerVideo::firstOrNew([
-					'video_source' => 'laracasts',
-					'video_id'     => $video_id,
-				]);
-
-			if ( $record->id )
+			foreach ( $lesson_urls as $url => $title )
 			{
-				continue;
+				$record = \OfflinerVideo::firstOrNew([
+						'video_source' => 'laracasts',
+						'video_id'     => $url,
+					]);
+
+				if ( $record->id )
+				{
+					continue;
+				}
+
+				$new_video = TRUE;
+				$this->info( 'Logging video <comment>' . $title . '</comment>...' );
+
+				$record->video_title = $title;
+				$record->video_url   = $laracasts->getDownloadUrl( $url );
+
+				$record->save();
 			}
-
-			$new_video = TRUE;
-			$this->info( 'Logging video <comment>' . $title . '</comment>...' );
-
-			$record->video_title = $title;
-			$record->video_url   = $laracasts->getFileUrl( (string) $entry->link->attributes()->href );
-
-			$record->save();
 		}
 
 		if ( !$new_video )

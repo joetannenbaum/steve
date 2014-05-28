@@ -12,13 +12,6 @@ class Laracasts {
 		$this->login();
 	}
 
-	public function getFeed()
-	{
-		$res = $this->client->get( 'https://laracasts.com/feed' );
-
-		return $res->xml();
-	}
-
 	private function login()
 	{
 		$res = $this->client->post( 'https://laracasts.com/sessions', [
@@ -30,21 +23,57 @@ class Laracasts {
 			]);
 	}
 
-	public function getFileUrl( $url )
+	public function getNewLessons()
+	{
+		$html    = file_get_contents( 'https://laracasts.com/latest');
+		$crawler = new \Symfony\Component\DomCrawler\Crawler( $html, 'https://laracasts.com' );
+		$list    = $crawler->filter('.list-group')->first()->filter('a')->links();
+
+		$urls = [];
+
+		foreach ( $list as $l )
+		{
+			$urls[] = $l->getUri();
+		}
+
+		return $urls;
+	}
+
+	public function getFileUrls( $url )
 	{
 		$res = $this->client->get( $url, [
 				'cookies' => TRUE,
 			]);
 
-		preg_match('/<input name="lesson-id" type="hidden" value="(\d+)">/', $res, $matches );
+		$crawler = new \Symfony\Component\DomCrawler\Crawler( (string) $res->getBody(), 'https://laracasts.com' );
 
-		$id = last( $matches );
+		$links = $crawler->filter('.lesson-meta')->first()->filter('a')->links();
 
-		$res = $this->client->get( 'https://laracasts.com/downloads/' . $id . '?type=lesson', [
-				'cookies' => TRUE,
-			]);
+		$title = $crawler->filter('title')->first()->text();
+		$title = explode( '|', $title );
+		$title = end( $title );
+		$title = trim( $title );
 
-		 return $res->getEffectiveUrl();
+		$return_urls = [];
+
+		foreach ( $links as $l )
+		{
+			$link_url = $l->getUri();
+
+			if ( preg_match('/https:\/\/laracasts.com\/downloads\/(\d+)\?type=(episode|lesson)/', $link_url ) )
+			{
+				$return_urls[ $link_url ] = $title;
+			}
+		}
+
+		return $return_urls;
+	}
+
+	public function getDownloadUrl( $url )
+	{
+		return $this->client->get( $url, [
+					'cookies' => TRUE,
+				])->getEffectiveUrl();
 	}
 
 }
