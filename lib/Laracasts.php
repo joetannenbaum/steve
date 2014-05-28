@@ -50,9 +50,6 @@ class Laracasts {
 		$links = $crawler->filter('.lesson-meta')->first()->filter('a')->links();
 
 		$title = $crawler->filter('title')->first()->text();
-		$title = explode( '|', $title );
-		$title = end( $title );
-		$title = trim( $title );
 
 		$return_urls = [];
 
