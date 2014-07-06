@@ -22,6 +22,7 @@ Route::get('/roku-screensaver', function()
 	$cache_key = 'roku-screensaver';
 
 	$return_photos = \Cache::get( $cache_key );
+$return_photos = NULL;
 
 	if ( !$return_photos )
 	{
@@ -54,10 +55,14 @@ Route::get('/roku-screensaver', function()
 
 			$photo = $response->json();
 
-			$photo_info = getimagesize( $photo['url'] );
+			$new_file_path = 'images/roku-screensaver/' . last( explode( '/', $photo['url'] ) );
+
+			file_put_contents( public_path( $new_file_path ), file_get_contents( $photo['url'] ) );
+
+			$photo_info = getimagesize( public_path( $new_file_path ) );
 
 			$return_photos[] = [
-					'url'    => $photo['url'],
+					'url'    => asset( $new_file_path ),
 					'width'  => $photo_info[ 0 ],
 					'height' => $photo_info[ 1 ],
 				];
