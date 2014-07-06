@@ -22,7 +22,6 @@ Route::get('/roku-screensaver', function()
 	$cache_key = 'roku-screensaver';
 
 	$return_photos = \Cache::get( $cache_key );
-$return_photos = NULL;
 
 	if ( !$return_photos )
 	{
@@ -68,7 +67,7 @@ $return_photos = NULL;
 				];
 		}
 
-		\Cache::put( $cache_key, $return_photos, \Carbon\Carbon::now()->addHours(4) );
+		\Cache::put( $cache_key, $return_photos, \Carbon\Carbon::now()->addHours(12) );
 	}
 
 	shuffle( $return_photos );
