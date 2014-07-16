@@ -11,6 +11,7 @@
 |
 */
 
+Artisan::add(new CacheRokuScreensaver);
 Artisan::add(new OfflinerLaracastVideosCommand);
 Artisan::add(new OfflinerPocketVideosCommand);
 Artisan::add(new OfflinerPushVideosCommand);
