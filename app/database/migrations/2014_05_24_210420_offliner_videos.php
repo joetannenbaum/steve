@@ -21,7 +21,7 @@ class OfflinerVideos extends Migration {
 		    $table->string('video_source');
 		    $table->string('video_id');
 		    $table->string('pocket_id');
-		    $table->timestamp('pocket_since');
+		    $table->dateTime('pocket_since')->nullable();
 		    $table->string('pusher_id')->nullable();
 		    $table->boolean('video_error')->default(FALSE);
 		    $table->string('video_error_message')->nullable();
