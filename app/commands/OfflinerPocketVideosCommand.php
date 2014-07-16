@@ -105,7 +105,7 @@ class OfflinerPocketVideosCommand extends Command {
 
 					$record->fill([
 							'pocket_id'    => $r->item_id,
-							'pocket_since' => new Carbon( $result->since ),
+							'pocket_since' => Carbon::createFromTimeStamp( $result->since ),
 						]);
 
 					$record->save();
