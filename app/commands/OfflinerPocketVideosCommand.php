@@ -49,6 +49,8 @@ class OfflinerPocketVideosCommand extends Command {
 				'since' => $since,
 			];
 
+			$since = ( is_int( $since ) ) ? $since : strtotime( $since );
+
 			$since_des = date( 'm/d/Y h:i:s A', $since );
 		}
 		else
