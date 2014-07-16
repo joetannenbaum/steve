@@ -46,8 +46,6 @@ class TellEm {
 			array_only( $params, 'type' )
 		);
 
-		echo \View::make( $template, $params ); die();
-
 		\Mail::send($template, $params, function ( $message ) use ( $subject ) {
 			$message->from( getenv( 'email.default.from.email'), getenv( 'email.default.from.name') );
 			$message->to( getenv( 'email.default.to.email'), getenv( 'email.default.to.name') );
