@@ -78,6 +78,11 @@ class OfflinerPocketVideosCommand extends Command {
 				continue;
 			}
 
+			if ( empty( $r->videos ) )
+			{
+				continue;
+			}
+
 			foreach ( $r->videos as $video )
 			{
 				if ( str_contains( $video->src, 'youtube' ) && !empty( $video->vid ) )
