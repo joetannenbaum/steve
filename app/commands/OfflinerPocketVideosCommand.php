@@ -101,6 +101,8 @@ class OfflinerPocketVideosCommand extends Command {
 
 					$this->info( 'Logging video <comment>' . $video->vid . '</comment>...' );
 
+					\Log::info( 'New pocket since: ' . $result->since );
+
 					$record->fill([
 							'pocket_id'    => $r->item_id,
 							'pocket_since' => new Carbon( $result->since ),
