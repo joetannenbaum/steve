@@ -41,6 +41,8 @@ class OfflinerPocketVideosCommand extends Command {
 
 		$since = \OfflinerVideo::max('pocket_since');
 
+		\Log::info( 'Getting pocket videos since ' .  $since );
+
 		if ( $since )
 		{
 			$pocket_params = [
