@@ -65,6 +65,7 @@ class OfflinerPushVideosCommand extends Command {
 		if ( !$video->video_url )
 		{
 			$this->error('No video URL found, killing it');
+			$video->save();
 			die();
 		}
 
