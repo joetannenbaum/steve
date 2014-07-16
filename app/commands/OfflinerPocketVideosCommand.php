@@ -4,6 +4,8 @@ use Illuminate\Console\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 
+use Carbon\Carbon;
+
 class OfflinerPocketVideosCommand extends Command {
 
 	/**
@@ -101,7 +103,7 @@ class OfflinerPocketVideosCommand extends Command {
 
 					$record->fill([
 							'pocket_id'    => $r->item_id,
-							'pocket_since' => $result->since,
+							'pocket_since' => new Carbon( $result->since ),
 						]);
 
 					$record->save();
