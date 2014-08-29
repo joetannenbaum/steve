@@ -51,7 +51,7 @@ class OfflinerPushVideosCommand extends Command {
 			die();
 		}
 
-		$pusher  = App::make('Steve\External\PushBullet');
+		$pusher  = new JoeTannenbaum\PHPushbullet\PHPushbullet;
 
 		switch ( $video->video_source )
 		{
@@ -71,7 +71,8 @@ class OfflinerPushVideosCommand extends Command {
 
 		$this->info( 'Pushing <comment>' . $video->video_title . '</comment> offline...' );
 
-		$push_response = $pusher->pushFile( $video->video_title, $video->video_url );
+		$push_response = $pusher->device('HTC One')->file( $video->video_title, $video->video_url );
+		$push_response = reset( $push_response );
 
 		if ( array_get( $push_response, 'iden' ) )
 		{

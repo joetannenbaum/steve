@@ -6,7 +6,8 @@
 	"require": {
 		"laravel/framework": "4.2.*",
 		"guzzlehttp/guzzle": "~4.0",
-		"tijsverkoyen/css-to-inline-styles": "*"
+		"tijsverkoyen/css-to-inline-styles": "*",
+		"joetannenbaum/phpushbullet": "0.1.*"
 	},
 	"autoload": {
 		"classmap": [

@@ -38,7 +38,6 @@ class OfflinerLaracastVideosCommand extends Command {
 	public function fire()
 	{
 		$laracasts = App::make('Steve\External\Laracasts');
-		$pusher    = App::make('Steve\External\PushBullet');
 
 		$this->info( 'Checking Laracasts feed...' );
 
