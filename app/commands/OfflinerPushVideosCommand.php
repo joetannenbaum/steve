@@ -76,11 +76,12 @@ class OfflinerPushVideosCommand extends Command {
 
 		if ( $video->video_source == 'laracasts' )
 		{
-			$additional_emails = getenv('laracasts.email') ?: [];
-
-			foreach ( $additional_emails as $name => $email )
+			foreach ( $_ENV as $key => $value )
 			{
-				$pusher->user( $email )->file( $video->video_title, $video->video_url );
+				if ( starts_with($key, 'laracasts.email') )
+				{
+					$pusher->user( $value )->file( $video->video_title, $video->video_url );
+				}
 			}
 		}
 
