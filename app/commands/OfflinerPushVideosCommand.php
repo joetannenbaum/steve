@@ -74,6 +74,16 @@ class OfflinerPushVideosCommand extends Command {
 		$push_response = $pusher->device('HTC One')->file( $video->video_title, $video->video_url );
 		$push_response = reset( $push_response );
 
+		if ( $video->video_source == 'laracasts' )
+		{
+			$additional_emails = getenv('laracasts.email') ?: [];
+
+			foreach ( $additional_emails as $name => $email )
+			{
+				$pusher->user( $email )->file( $video->video_title, $video->video_url );
+			}
+		}
+
 		if ( array_get( $push_response, 'iden' ) )
 		{
 			$this->info( 'Updating video record video...' );
