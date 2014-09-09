@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "724c834968d91683d45fb918e19f275e",
+    "hash": "93b9c7ece572a4aeaf2e4c141882fcfb",
     "packages": [
         {
             "name": "classpreloader/classpreloader",
@@ -164,12 +164,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/guzzle.git",
-                "reference": "64fcc4b37cd218ad99bc97b96c30f47626d85f75"
+                "reference": "9c4fbbf6457768f5036fbd88f1229f3fca812a5d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/64fcc4b37cd218ad99bc97b96c30f47626d85f75",
-                "reference": "64fcc4b37cd218ad99bc97b96c30f47626d85f75",
+                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/9c4fbbf6457768f5036fbd88f1229f3fca812a5d",
+                "reference": "9c4fbbf6457768f5036fbd88f1229f3fca812a5d",
                 "shasum": ""
             },
             "require": {
@@ -221,7 +221,7 @@
                 "rest",
                 "web service"
             ],
-            "time": "2014-09-08 20:58:31"
+            "time": "2014-09-08 22:11:58"
         },
         {
             "name": "guzzlehttp/streams",
@@ -365,16 +365,16 @@
         },
         {
             "name": "joetannenbaum/phpushbullet",
-            "version": "dev-master",
+            "version": "1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/joetannenbaum/phpushbullet.git",
-                "reference": "67f77e030fa5e86e4a4e1e8a8fa9b56c4baceb10"
+                "reference": "405361805b82bbf9615601ed0ea720f657a34ff6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/joetannenbaum/phpushbullet/zipball/67f77e030fa5e86e4a4e1e8a8fa9b56c4baceb10",
-                "reference": "67f77e030fa5e86e4a4e1e8a8fa9b56c4baceb10",
+                "url": "https://api.github.com/repos/joetannenbaum/phpushbullet/zipball/405361805b82bbf9615601ed0ea720f657a34ff6",
+                "reference": "405361805b82bbf9615601ed0ea720f657a34ff6",
                 "shasum": ""
             },
             "require": {
@@ -388,7 +388,7 @@
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "JoeTannenbaum\\PHPushbullet\\": "src/"
+                    "PHPushbullet\\": "src/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -410,7 +410,7 @@
                 "push",
                 "pushbullet"
             ],
-            "time": "2014-08-28 22:20:56"
+            "time": "2014-09-09 00:16:14"
         },
         {
             "name": "laravel/framework",
@@ -1869,9 +1869,9 @@
 
     ],
     "minimum-stability": "dev",
-    "stability-flags": {
-        "joetannenbaum/phpushbullet": 20
-    },
+    "stability-flags": [
+
+    ],
     "prefer-stable": false,
     "platform": [
 
