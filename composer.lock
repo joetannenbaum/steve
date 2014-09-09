@@ -365,16 +365,16 @@
         },
         {
             "name": "joetannenbaum/phpushbullet",
-            "version": "1.0.0",
+            "version": "1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/joetannenbaum/phpushbullet.git",
-                "reference": "405361805b82bbf9615601ed0ea720f657a34ff6"
+                "reference": "aade1c41949b5ec991d6fbd151fa1f7e40356e7f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/joetannenbaum/phpushbullet/zipball/405361805b82bbf9615601ed0ea720f657a34ff6",
-                "reference": "405361805b82bbf9615601ed0ea720f657a34ff6",
+                "url": "https://api.github.com/repos/joetannenbaum/phpushbullet/zipball/aade1c41949b5ec991d6fbd151fa1f7e40356e7f",
+                "reference": "aade1c41949b5ec991d6fbd151fa1f7e40356e7f",
                 "shasum": ""
             },
             "require": {
@@ -410,7 +410,7 @@
                 "push",
                 "pushbullet"
             ],
-            "time": "2014-09-09 00:16:14"
+            "time": "2014-09-09 00:35:30"
         },
         {
             "name": "laravel/framework",
