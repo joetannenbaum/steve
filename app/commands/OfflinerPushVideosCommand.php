@@ -80,7 +80,7 @@ class OfflinerPushVideosCommand extends Command {
 			{
 				if ( starts_with($key, 'laracasts.email') )
 				{
-					// $pusher->user( $value )->file( $video->video_title, $video->video_url );
+					$pusher->user( $value )->file( $video->video_title, $video->video_url );
 				}
 			}
 		}
