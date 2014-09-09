@@ -51,7 +51,7 @@ class OfflinerPushVideosCommand extends Command {
 			die();
 		}
 
-		$pusher  = new JoeTannenbaum\PHPushbullet\PHPushbullet;
+		$pusher  = new PHPushbullet\PHPushbullet;
 
 		switch ( $video->video_source )
 		{
