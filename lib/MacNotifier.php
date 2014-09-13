@@ -26,8 +26,7 @@ class MacNotifier {
 
 	protected function getNotification($title, $body, $url, $sender)
 	{
-		return 'sleep 3 ' . "\n"
-				. 'terminal-notifier -message "' . $body . '" '
+		return 'terminal-notifier -message "' . $body . '" '
 				. '-title "' . $title . '" '
 				. '-open ' . $url . ' '
 				. '-sender ' . $sender;
