@@ -4,10 +4,6 @@ use Illuminate\Console\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 
-use Dropbox\Client;
-use League\Flysystem\Filesystem;
-use League\Flysystem\Adapter\Dropbox as Adapter;
-
 class AlertGithubActivity extends Command {
 
 	/**
@@ -75,8 +71,8 @@ class AlertGithubActivity extends Command {
 		}
 
 		if ($changed) {
-			$client     = new Client(getenv('dropbox.steve_access_token'), 'Steve Jobs');
-			$filesystem = new Filesystem(new Adapter($client));
+
+			$notifier = new \Steve\External\MacNotifier();
 
 			foreach ($changed as $repo => $changes) {
 				foreach ($changes as $key => $value) {
@@ -89,19 +85,10 @@ class AlertGithubActivity extends Command {
 					$title = $repo;
 					$body  = $emoji . ' ' . $value['total'] . ' (+' . $value['delta'] . ')';
 
-					$filesystem->write('Dev/notifications/' . microtime(TRUE) . '.sh', $this->getNotification($title, $body, $value['url']));
+					$notifier->notify($title, $body, $value['url'], 'com.github.GitHub');
 				}
 			}
 		}
-	}
-
-	protected function getNotification($title, $body, $url)
-	{
-		return 'sleep 3 ' . "\n"
-				. 'terminal-notifier -message "' . $body . '" '
-				. '-title "' . $title . '" '
-				. '-open ' . $url . ' '
-				. '-sender com.github.GitHub';
 	}
 
 }
