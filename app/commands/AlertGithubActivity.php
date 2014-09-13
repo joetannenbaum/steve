@@ -3,6 +3,7 @@
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
+use Steve\External\MacNotifier;
 
 class AlertGithubActivity extends Command {
 
@@ -72,7 +73,7 @@ class AlertGithubActivity extends Command {
 
 		if ($changed) {
 
-			$notifier = new \Steve\External\MacNotifier();
+			$notifier = new MacNotifier();
 
 			foreach ($changed as $repo => $changes) {
 				foreach ($changes as $key => $value) {
