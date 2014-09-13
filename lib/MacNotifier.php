@@ -24,13 +24,13 @@ class MacNotifier {
         $this->filesystem->write($filename, $notification);
     }
 
-	protected function getNotification($title, $body, $url)
+	protected function getNotification($title, $body, $url, $sender)
 	{
 		return 'sleep 3 ' . "\n"
 				. 'terminal-notifier -message "' . $body . '" '
 				. '-title "' . $title . '" '
 				. '-open ' . $url . ' '
-				. '-sender com.github.GitHub';
+				. '-sender ' . $sender;
 	}
 
 }
