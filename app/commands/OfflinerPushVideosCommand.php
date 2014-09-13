@@ -3,6 +3,7 @@
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
+use Steve\External\MacNotifier;
 
 class OfflinerPushVideosCommand extends Command {
 
@@ -123,11 +124,12 @@ class OfflinerPushVideosCommand extends Command {
 			$video->video_error_message = $video_info['error_message'];
 			$video->video_error_code = $video_info['error_code'];
 
-			$notification_message = 'There was a problem getting the following video: '
-									. 'https://www.youtube.com/watch?v=' . $video->video_id . '</p>'
-									. '<p><strong>' . $video_info['error_message'] . '</strong>';
+			$notifier = new MacNotifier();
 
-			\TellEm::error( 'Problem Offlining Video', $notification_message );
+			$title = 'Problem Offlining Video';
+			$url   = 'https://www.youtube.com/watch?v=' . $video->video_id;
+
+			$notifier->notify($title, $video_info['error_message'], $url, 'com.apple.Automator');
 		}
 
 		return $video;
