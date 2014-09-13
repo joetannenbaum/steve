@@ -19,7 +19,7 @@ class AlertGithubActivity extends Command {
 	 *
 	 * @var string
 	 */
-	protected $description = 'I\'ll check it anyway, just alert me of changes.';
+	protected $description = 'I\'ll check it anyway, so just alert me of changes.';
 
 	/**
 	 * Create a new command instance.
