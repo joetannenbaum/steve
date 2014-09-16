@@ -40,13 +40,15 @@ class AlertGithubActivity extends Command {
 	{
 		$client = new \GuzzleHttp\Client();
 
-		$repos = $client->get('https://api.github.com/user/repos', [
-				'headers' => [
-					'Authorization' => 'token ' . getenv('github.access_token'),
-				],
-			]);
+		$params = [
+				'headers' => [ 'Authorization' => 'token ' . getenv('github.access_token') ],
+			];
+
+		$repos = $client->get('https://api.github.com/user/repos', $params);
+		$org_repos = $client->get('https://api.github.com/repos/thephpleague/climate', $params);
 
 		$repos = $repos->json();
+		$repos[] = $org_repos->json();
 
 		$changed = [];
 
