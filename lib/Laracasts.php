@@ -25,15 +25,18 @@ class Laracasts {
 
 	public function getNewLessons()
 	{
-		$html    = file_get_contents( 'https://laracasts.com/latest');
-		$crawler = new \Symfony\Component\DomCrawler\Crawler( $html, 'https://laracasts.com' );
-		$list    = $crawler->filter('.list-group')->first()->filter('a')->links();
+		$res = $this->client->get('https://laracasts.com/feed');
 
 		$urls = [];
 
-		foreach ( $list as $l )
+		foreach ( $res->xml() as $r )
 		{
-			$urls[] = $l->getUri();
+			if ( !$r->link )
+			{
+				continue;
+			}
+
+			$urls[] = (string) $r->link->attributes()['href'];
 		}
 
 		return $urls;
