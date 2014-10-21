@@ -12,6 +12,7 @@
 */
 
 Artisan::add(new AlertGithubActivity);
+Artisan::add(new AlertPackagistActivity);
 Artisan::add(new CacheRokuScreensaver);
 Artisan::add(new EmailRandomWorkout);
 Artisan::add(new OfflinerLaracastVideosCommand);
