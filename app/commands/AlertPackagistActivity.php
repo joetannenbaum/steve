@@ -62,7 +62,7 @@ class AlertPackagistActivity extends Command {
 
 				$notifier->notify($package, $body, $base_url . $package, 'com.github.GitHub');
 
-				Cache::tags('package-activity')->put($key, ['downloads' => ['total' => $stats['package']['downloads']['total']]], 60);
+				Cache::tags('package-activity')->put($key, ['downloads' => ['total' => $stats['package']['downloads']['total']]], 120);
 			}
 
 		}
