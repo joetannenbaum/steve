@@ -58,7 +58,9 @@ class AlertPackagistActivity extends Command {
 			$delta = $stats['package']['downloads']['total'] - array_get($downloads, 'total', 0);
 
 			if ($delta > 0) {
-				$body  = "📦 {$stats['package']['downloads']['total']} (+{$delta})";
+				$body  = "📦 {$stats['package']['downloads']['total']} (+{$delta})\n";
+				$body .= "{$stats['package']['downloads']['daily']} today, ";
+				$body .= "{$stats['package']['downloads']['monthly']} this month";
 
 				$notifier->notify($package, $body, $base_url . $package, 'com.github.GitHub');
 
