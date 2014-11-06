@@ -5,7 +5,7 @@
 	"license": "MIT",
 	"require": {
 		"laravel/framework": "4.2.*",
-		"guzzlehttp/guzzle": "~4.0",
+		"guzzlehttp/guzzle": "~5.0",
 		"tijsverkoyen/css-to-inline-styles": "*",
 		"joetannenbaum/phpushbullet": "~1.0",
         "league/flysystem": "0.5.*",
