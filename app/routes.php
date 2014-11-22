@@ -19,9 +19,30 @@ Route::get('/', function()
 
 Route::get('/roku-screensaver', function()
 {
-	$photos = \Cache::get( 'roku-screensaver' );
+    $photos = \Cache::get( 'roku-screensaver' );
 
-	shuffle( $photos );
+    shuffle( $photos );
 
-	return $photos;
+    return $photos;
+});
+
+Route::get('/offliner', function()
+{
+    return View::make('offliner');
+});
+
+Route::post('/offliner', function()
+{
+    if (Input::get('password') == getenv('offliner_password')) {
+        OfflinerVideo::create([
+                'video_title'  => Input::get('title'),
+                'video_source' => 'manual',
+                'video_id'     => md5(Input::get('url') . time()),
+                'video_url'    => Input::get('url'),
+            ]);
+
+        return Redirect::to('offliner')->with('success_message', 'Nailed it.');
+    }
+
+    return Redirect::to('offliner')->with('error_message', 'Nope. No good.');
 });

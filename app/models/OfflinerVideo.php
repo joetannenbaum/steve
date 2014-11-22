@@ -10,6 +10,7 @@ class OfflinerVideo extends Eloquent {
 		'video_title',
 		'video_source',
 		'video_id',
+		'video_url',
 		'pocket_id',
 		'pocket_since',
 		'pusher_id',
