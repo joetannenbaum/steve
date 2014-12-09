@@ -40,87 +40,89 @@ class OfflinerPushVideosCommand extends Command {
 	{
 		$pocket = new \Steve\External\Pocket;
 
-		$this->info( 'Checking for unpushed videos...' );
+		$this->info('Checking for unpushed videos...');
 
 		$video = \OfflinerVideo::unpushed()
 								->orderBy('id')
 								->first();
 
-		if ( empty( $video ) )
+		if (empty($video))
 		{
-			$this->comment( 'No videos = nothing to do! G\'bye.' );
+			$this->comment('No videos = nothing to do! G\'bye.');
 			die();
 		}
 
 		$pusher  = new PHPushbullet\PHPushbullet;
 
-		switch ( $video->video_source )
+		switch ($video->video_source)
 		{
 			case 'youtube':
+				$video = $this->handleYouTube($video);
+			break;
 
-				$video = $this->handleYouTube( $video );
-
+			case 'vimeo':
+				$video = $this->handleVimeo($video);
 			break;
 		}
 
-		if ( !$video->video_url )
+		if (!$video->video_url)
 		{
 			$this->error('No video URL found, killing it');
 			$video->save();
 			die();
 		}
 
-		$this->info( 'Pushing <comment>' . $video->video_title . '</comment> offline...' );
+		$this->info('Pushing <comment>' . $video->video_title . '</comment> offline...');
 
-		$push_response = $pusher->device('HTC One')->file( $video->video_title, $video->video_url );
-		$push_response = reset( $push_response );
+		$push_response = $pusher->device('HTC One')->file($video->video_title, $video->video_url);
+		$push_response = reset($push_response);
 
-		if ( $video->video_source == 'laracasts' )
+		if ($video->video_source == 'laracasts')
 		{
-			foreach ( $_ENV as $key => $value )
+			foreach ($_ENV as $key => $value)
 			{
-				if ( starts_with($key, 'laracasts.email') )
+				if (starts_with($key, 'laracasts.email'))
 				{
-					$pusher->user( $value )->file( $video->video_title, $video->video_url );
+					$pusher->user($value)->file($video->video_title, $video->video_url);
 				}
 			}
 		}
 
-		if ( array_get( $push_response, 'iden' ) )
+		if (array_get($push_response, 'iden'))
 		{
-			$this->info( 'Updating video record video...' );
+			$this->info('Updating video record video...');
 
 			$video->pusher_id = $push_response['iden'];
 
 		}
 		else
 		{
-			$this->error('Pushing failed: ' . json_encode( $push_response ) );
+			$this->error('Pushing failed: ' . json_encode($push_response));
 		}
 
 		$video->save();
 
-		$this->comment( 'Donezo. Enjoy.' );
+		$this->comment('Donezo. Enjoy.');
 	}
 
-	private function handleYouTube( $video )
+	private function handleYouTube($video)
 	{
 		$youtube = new \Steve\External\YouTube;
 
-		$this->info( 'Getting video info for video ID ' . $video->video_id );
+		$this->info('Getting video info for video ID ' . $video->video_id);
 
-		$video_info = $youtube->getVideoInfo( $video->video_id );
+		$video_info = $youtube->getVideoInfo($video->video_id);
 
-		if ( array_get( $video_info, 'title' ) )
+		if (array_get($video_info, 'title'))
 		{
 			$video->video_url   = $video_info['best_format']['url'];
 			$video->video_title = $video_info['title'];
 		}
 		else
 		{
-			$this->error( 'Problem getting video: ' . $video_info['error_message'] );
+			$this->error('Problem getting video: ' . $video_info['error_message']);
 
-			$video->video_error = TRUE;
+			$video->video_error = true;
 			$video->video_error_message = $video_info['error_message'];
 			$video->video_error_code = $video_info['error_code'];
 
@@ -128,6 +130,35 @@ class OfflinerPushVideosCommand extends Command {
 
 			$title = 'Problem Offlining Video';
 			$url   = 'https://www.youtube.com/watch?v=' . $video->video_id;
+
+			$notifier->notify($title, $video_info['error_message'], $url, 'com.apple.Automator');
+		}
+
+		return $video;
+	}
+
+	private function handleVimeo($video)
+	{
+		$vimeo = new \Steve\External\Vimeo;
+
+		$this->info('Getting video info for video ID ' . $video->video_id);
+
+		$video_info = $vimeo->getVideoInfo($video->video_id);
+
+		if (array_get($video_info, 'title')) {
+			$video->video_url   = $video_info['url'];
+			$video->video_title = $video_info['title'];
+		} else {
+			$this->error('Problem getting video: ' . $video_info['error_message']);
+
+			$video->video_error = true;
+			$video->video_error_message = $video_info['error_message'];
+			$video->video_error_code = $video_info['error_code'];
+
+			$notifier = new MacNotifier();
+
+			$title = 'Problem Offlining Video';
+			$url   = 'http://player.vimeo.com/video/' . $video->video_id;
 
 			$notifier->notify($title, $video_info['error_message'], $url, 'com.apple.Automator');
 		}

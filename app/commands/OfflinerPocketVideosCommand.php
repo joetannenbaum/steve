@@ -43,69 +43,69 @@ class OfflinerPocketVideosCommand extends Command {
 
 		$since = \OfflinerVideo::max('pocket_since');
 
-		\Log::info( 'Getting pocket videos since ' .  $since );
+		\Log::info('Getting pocket videos since ' .  $since);
 
-		if ( $since )
-		{
+		if ($since) {
 			$pocket_params = [
 				'since' => $since,
 			];
 
-			$since = ( is_int( $since ) ) ? $since : strtotime( $since );
+			$since = (is_int($since)) ? $since : strtotime($since);
 
-			$since_des = date( 'm/d/Y h:i:s A', $since );
-		}
-		else
-		{
+			$since_des = date('m/d/Y h:i:s A', $since);
+		} else {
 			$pocket_params = [];
 
 			$since_des = 'the beginning of time';
 		}
 
-		$this->info( 'Getting videos from Pocket since ' . $since_des . '...' );
+		$this->info('Getting videos from Pocket since ' . $since_des . '...');
 
-		$result = $pocket->getVideos( $pocket_params );
+		$result = $pocket->getVideos($pocket_params);
 
-		if ( empty( $result->list ) )
-		{
-			$this->comment( 'No videos = nothing to do! G\'bye.' );
+		if (empty($result->list)) {
+			$this->comment('No videos = nothing to do! G\'bye.');
 			die();
 		}
 
-		foreach ( $result->list as $r )
-		{
+		foreach ($result->list as $r) {
 			// 0 means not deleted or archived
-			if ( $r->status != 0 )
-			{
+			if ($r->status != 0) {
 				continue;
 			}
 
-			if ( empty( $r->videos ) )
-			{
+			if (empty($r->videos)) {
 				continue;
 			}
 
-			foreach ( $r->videos as $video )
-			{
-				if ( str_contains( $video->src, 'youtube' ) && !empty( $video->vid ) )
-				{
+			foreach ($r->videos as $video) {
+				if (empty($video->vid)) {
+					continue;
+				}
+
+				if (str_contains($video->src, 'youtube')) {
+					$src = 'youtube';
+				} else if (str_contains($video->src, 'vimeo')) {
+					$src = 'vimeo';
+				}
+
+				if (!empty($src)) {
 					$record = \OfflinerVideo::firstOrNew([
-							'video_source' => 'youtube',
+							'video_source' => $src,
 							'video_id'     => $video->vid,
 						]);
 
-					if ( $record->id )
-					{
+					if ($record->id) {
 						continue;
 					}
 
-					$this->info( 'Logging video <comment>' . $video->vid . '</comment>...' );
+					$this->info('Logging video <comment>' . $video->vid . '</comment>...');
 
-					\Log::info( 'New pocket since: ' . $result->since );
+					\Log::info('New pocket since: ' . $result->since);
 
 					$record->fill([
 							'pocket_id'    => $r->item_id,
-							'pocket_since' => Carbon::createFromTimeStamp( $result->since ),
+							'pocket_since' => Carbon::createFromTimeStamp($result->since),
 						]);
 
 					$record->save();
@@ -113,7 +113,7 @@ class OfflinerPocketVideosCommand extends Command {
 			}
 		}
 
-		$this->comment( 'Donezo. Enjoy.' );
+		$this->comment('Donezo. Enjoy.');
 	}
 
 	/**
