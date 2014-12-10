@@ -49,7 +49,9 @@ class OfflinerPushVideosCommand extends Command {
 			die();
 		}
 
-		$pusher = new PHPushbullet\PHPushbullet;
+		$user = \User::find($video->user_id);
+
+		$pusher = new PHPushbullet\PHPushbullet($user->pushbullet_token);
 
 		switch ($video->video_source)
 		{
@@ -70,8 +72,6 @@ class OfflinerPushVideosCommand extends Command {
 		}
 
 		$this->info('Pushing <comment>' . $video->video_title . '</comment> offline...');
-
-		$user = \User::find($video->user_id);
 
 		foreach ($user->devices as $device) {
 			$push_response = $pusher->device($device->pushbullet_id)
