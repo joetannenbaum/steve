@@ -38,21 +38,18 @@ class OfflinerPushVideosCommand extends Command {
 	 */
 	public function fire()
 	{
-		$pocket = new \Steve\External\Pocket;
-
 		$this->info('Checking for unpushed videos...');
 
 		$video = \OfflinerVideo::unpushed()
 								->orderBy('id')
 								->first();
 
-		if (empty($video))
-		{
+		if (empty($video)) {
 			$this->comment('No videos = nothing to do! G\'bye.');
 			die();
 		}
 
-		$pusher  = new PHPushbullet\PHPushbullet;
+		$pusher = new PHPushbullet\PHPushbullet;
 
 		switch ($video->video_source)
 		{
@@ -74,29 +71,27 @@ class OfflinerPushVideosCommand extends Command {
 
 		$this->info('Pushing <comment>' . $video->video_title . '</comment> offline...');
 
-		$push_response = $pusher->device('HTC One')->file($video->video_title, $video->video_url);
-		$push_response = reset($push_response);
+		$user = \User::find($video->user_id);
 
-		if ($video->video_source == 'laracasts')
-		{
-			foreach ($_ENV as $key => $value)
-			{
-				if (starts_with($key, 'laracasts.email'))
-				{
+		foreach ($user->devices as $device) {
+			$push_response = $pusher->device($device->pushbullet_id)
+									->file($video->video_title, $video->video_url);
+			$push_response = reset($push_response);
+		}
+
+		if ($video->video_source == 'laracasts') {
+			foreach ($_ENV as $key => $value) {
+				if (starts_with($key, 'laracasts.email')) {
 					$pusher->user($value)->file($video->video_title, $video->video_url);
 				}
 			}
 		}
 
-		if (array_get($push_response, 'iden'))
-		{
+		if (array_get($push_response, 'iden')) {
 			$this->info('Updating video record video...');
 
 			$video->pusher_id = $push_response['iden'];
-
-		}
-		else
-		{
+		} else {
 			$this->error('Pushing failed: ' . json_encode($push_response));
 		}
 
@@ -113,13 +108,10 @@ class OfflinerPushVideosCommand extends Command {
 
 		$video_info = $youtube->getVideoInfo($video->video_id);
 
-		if (array_get($video_info, 'title'))
-		{
+		if (array_get($video_info, 'title')) {
 			$video->video_url   = $video_info['best_format']['url'];
 			$video->video_title = $video_info['title'];
-		}
-		else
-		{
+		} else {
 			$this->error('Problem getting video: ' . $video_info['error_message']);
 
 			$video->video_error = true;

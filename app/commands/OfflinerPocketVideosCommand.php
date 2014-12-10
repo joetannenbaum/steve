@@ -39,9 +39,18 @@ class OfflinerPocketVideosCommand extends Command {
 	 */
 	public function fire()
 	{
-		$pocket = new \Steve\External\Pocket;
+		$users = User::all();
 
-		$since = \OfflinerVideo::max('pocket_since');
+		foreach ($users as $user) {
+			$this->getVideos($user);
+		}
+	}
+
+	protected function getVideos($user)
+	{
+		$pocket = new \Steve\External\Pocket($user->pocket_token);
+
+		$since = \OfflinerVideo::user($user->id)->max('pocket_since');
 
 		\Log::info('Getting pocket videos since ' .  $since);
 
@@ -106,6 +115,7 @@ class OfflinerPocketVideosCommand extends Command {
 					$record->fill([
 							'pocket_id'    => $r->item_id,
 							'pocket_since' => Carbon::createFromTimeStamp($result->since),
+							'user_id'      => $user->id,
 						]);
 
 					$record->save();

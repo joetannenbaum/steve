@@ -26,6 +26,58 @@ Route::get('/roku-screensaver', function()
     return $photos;
 });
 
+Route::get('authorize-offliner', function() {
+    $pocket = new \Steve\External\Pocket();
+
+    return Redirect::to($pocket->getAuthUrl());
+});
+
+Route::get('pocket-authorized', function() {
+    $pocket = new \Steve\External\Pocket();
+
+    $response = $pocket->finishAuth();
+
+    $params   = [
+        'pocket_username' => $response['username'],
+        'pocket_token'    => $response['access_token'],
+    ];
+
+    $user = User::firstOrNew($params);
+
+    if (!$user->id) {
+        $user->save();
+    }
+
+    Session::put('user', $user);
+
+    return View::make('authorize-pushbullet');
+});
+
+Route::post('authorize-pushbullet', function() {
+    User::find(Session::get('user')->id)->update(['pushbullet_token' => Input::get('token')]);
+
+    $pusher = new PHPushbullet\PHPushbullet(Input::get('token'));
+
+    return View::make('select-pusher-devices', ['devices' => $pusher->devices()]);
+});
+
+Route::post('authorization-done', function() {
+    foreach (Input::get('devices', []) as $device) {
+        list($pushbullet_id, $name) = explode('|', $device);
+        $push_device = PushbulletDevice::firstOrNew([
+                'user_id' => Session::get('user')->id,
+                'pushbullet_id' => $pushbullet_id,
+                'name' => $name,
+            ]);
+
+        if (!$push_device->id) {
+            $push_device->save();
+        }
+    }
+
+    return View::make('authorization-done');
+});
+
 Route::get('/offliner', function()
 {
     return View::make('offliner');

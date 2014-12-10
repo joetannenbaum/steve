@@ -10,48 +10,80 @@ class Pocket {
 
 	private $api_base = 'https://getpocket.com/v3/';
 
-	public function __construct()
+	public function __construct($access_token = null)
 	{
 		$this->consumer_key = getenv('pocket.consumer_key');
-		$this->access_token = getenv('pocket.access_token');
+
+		if ($access_token) {
+			$this->access_token = $access_token;
+		}
 	}
 
-	public function getVideos( $params = [] )
+	public function getVideos($params = [])
 	{
-		$default = [
-				'contentType'  => 'video',
-			];
+		$client = $this->getClient();
 
-		$params = array_merge( $default, $params );
-
-		return $this->get( $params );
+		$res = $client->get('get', ['query' => $this->getParams($params)]);
+		return $res->json(['object' => true]);
 	}
 
-	public function get( $params = [] )
+	protected function getClient()
 	{
-		//since
+		return new \GuzzleHttp\Client(['base_url' => $this->api_base]);
+	}
+
+	protected function getParams($params)
+	{
 		$default = [
 				'consumer_key' => $this->consumer_key,
 				'access_token' => $this->access_token,
+				'contentType'  => 'video',
 				'detailType'   => 'complete',
 			];
 
-		$params = array_merge( $default, $params );
-
-		$client = new \GuzzleHttp\Client();
-
-		$res = $client->get( $this->url('get'), [
-			'query' => $params
-		]);
-
-		$res = $res->json([ 'object' => TRUE ]);
-
-		return $res;
+		return array_merge($default, $params);
 	}
 
-	private function url( $append )
+	public function getAuthUrl()
 	{
-		return $this->api_base . $append;
+		$client = $this->getClient();
+		$res = $client->post('oauth/request', [
+				'json' => [
+					'consumer_key' => $this->consumer_key,
+					'redirect_uri' => url('pocket-authorized'),
+				]
+			]);
+
+		$response = (string) $res->getBody();
+		parse_str($response);
+
+		\Session::put('pocket_token', $code);
+
+		$params   = [
+			'request_token' => $code,
+			'redirect_uri'  => url('pocket-authorized'),
+		];
+
+		return 'https://getpocket.com/auth/authorize?' . http_build_query($params);
+	}
+
+	public function finishAuth()
+	{
+		$client = $this->getClient();
+		$res = $client->post('oauth/authorize', [
+				'json' => [
+					'consumer_key' => $this->consumer_key,
+					'code'         => \Session::get('pocket_token'),
+				]
+			]);
+
+		$response = (string) $res->getBody();
+
+		parse_str($response);
+
+		\Session::forget('pocket_token');
+
+		return compact('username', 'access_token');
 	}
 
 }
