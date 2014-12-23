@@ -2,11 +2,13 @@
 
 namespace Steve\External;
 
+use GuzzleHttp\Client;
+
 class Laracasts {
 
 	private $client;
 
-	public function __construct( \GuzzleHttp\Client $guzzle )
+	public function __construct(Client $guzzle)
 	{
 		$this->client = new $guzzle();
 		$this->login();
@@ -14,11 +16,11 @@ class Laracasts {
 
 	private function login()
 	{
-		$res = $this->client->post( 'https://laracasts.com/sessions', [
-				'cookies' => TRUE,
+		$res = $this->client->post('https://laracasts.com/sessions', [
+				'cookies' => true,
 				'body'    => [
-					'email'    => getenv( 'laracasts.username' ),
-					'password' => getenv( 'laracasts.password' ),
+					'email'    => getenv('laracasts.username'),
+					'password' => getenv('laracasts.password'),
 				],
 			]);
 	}
@@ -29,10 +31,8 @@ class Laracasts {
 
 		$urls = [];
 
-		foreach ( $res->xml() as $r )
-		{
-			if ( !$r->link )
-			{
+		foreach ($res->xml() as $r) {
+			if (!$r->link) {
 				continue;
 			}
 
@@ -42,13 +42,13 @@ class Laracasts {
 		return $urls;
 	}
 
-	public function getFileUrls( $url )
+	public function getFileUrls($url)
 	{
-		$res = $this->client->get( $url, [
-				'cookies' => TRUE,
+		$res = $this->client->get($url, [
+				'cookies' => true,
 			]);
 
-		$crawler = new \Symfony\Component\DomCrawler\Crawler( (string) $res->getBody(), 'https://laracasts.com' );
+		$crawler = new \Symfony\Component\DomCrawler\Crawler((string) $res->getBody(), 'https://laracasts.com');
 
 		$links = $crawler->filter('.lesson-meta')->first()->filter('a')->links();
 
@@ -56,23 +56,21 @@ class Laracasts {
 
 		$return_urls = [];
 
-		foreach ( $links as $l )
-		{
+		foreach ($links as $l) {
 			$link_url = $l->getUri();
 
-			if ( preg_match('/https:\/\/laracasts.com\/downloads\/(\d+)\?type=(episode|lesson)/', $link_url ) )
-			{
-				$return_urls[ $link_url ] = $title;
+			if (preg_match('/https:\/\/laracasts.com\/downloads\/(\d+)\?type=(episode|lesson)/', $link_url)) {
+				$return_urls[$link_url] = $title;
 			}
 		}
 
 		return $return_urls;
 	}
 
-	public function getDownloadUrl( $url )
+	public function getDownloadUrl($url)
 	{
-		return $this->client->get( $url, [
-					'cookies' => TRUE,
+		return $this->client->get($url, [
+					'cookies' => true,
 				])->getEffectiveUrl();
 	}
 

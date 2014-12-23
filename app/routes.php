@@ -11,14 +11,11 @@
 |
 */
 
-Route::get('/', function()
-{
+Route::get('/', function() {
 	return View::make('hello');
 });
 
-
-Route::get('/roku-screensaver', function()
-{
+Route::get('/roku-screensaver', function() {
     $photos = \Cache::get( 'roku-screensaver' );
 
     shuffle( $photos );
@@ -78,13 +75,11 @@ Route::post('authorization-done', function() {
     return View::make('authorization-done');
 });
 
-Route::get('/offliner', function()
-{
+Route::get('/offliner', function() {
     return View::make('offliner');
 });
 
-Route::post('/offliner', function()
-{
+Route::post('/offliner', function() {
     if (Input::get('password') == getenv('offliner_password')) {
         OfflinerVideo::create([
                 'video_title'  => Input::get('title'),
@@ -97,4 +92,32 @@ Route::post('/offliner', function()
     }
 
     return Redirect::to('offliner')->with('error_message', 'Nope. No good.');
+});
+
+Route::get('/sit-down/{id?}', function($id = null) {
+    $seating = Seating::orderBy('id', 'desc')->get();
+
+    $current = ($id) ? Seating::find($id) : $seating->first();
+
+    $display = [
+        'seating'      => $current,
+        'seating_json' => json_encode(($current) ? $current->arrangement : null),
+        'guests'       => Guest::orderBy('name')->get(),
+        'tables'       => SeatingTable::all(),
+        'all_seating'  => $seating,
+    ];
+
+    return View::make('seating/index', $display);
+});
+
+Route::post('/sit-down', function() {
+    $params = Input::only(['name', 'arrangement']);
+
+    $seating = Seating::create($params);
+
+    $seating->html = '<a href="/sit-down/' . $seating->id . '">'
+                    . $seating->name
+                    . ' (' . $seating->created_at->format('m/d/Y h:iA') . ')</a>';
+
+    return $seating->toArray();
 });
