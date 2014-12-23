@@ -1,6 +1,6 @@
 <?php
 
-namespace Steve\External;
+namespace Steve\External\Media;
 
 use GuzzleHttp\Client;
 

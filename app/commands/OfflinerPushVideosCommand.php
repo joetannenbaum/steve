@@ -4,6 +4,8 @@ use Illuminate\Console\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Steve\Notify\MacNotifier;
+use PHPushbullet\PHPushbullet;
+use Steve\External\Media;
 
 class OfflinerPushVideosCommand extends Command {
 
@@ -49,27 +51,52 @@ class OfflinerPushVideosCommand extends Command {
 			die();
 		}
 
-		$user = \User::find($video->user_id);
+		$this->info('Getting video info for video ID ' . $video->video_id);
 
-		$pusher = new PHPushbullet\PHPushbullet($user->pushbullet_token);
+		$handler = $this->getHandler($video->video_source);
 
-		switch ($video->video_source)
-		{
-			case 'youtube':
-				$video = $this->handleYouTube($video);
-			break;
+		if (!$handler) {
+			$notifier = new MacNotifier();
+			$notifier->notify('Unsupported video source, quitting: ' . $video->video_source, null, null, 'com.apple.Automator');
 
-			case 'vimeo':
-				$video = $this->handleVimeo($video);
-			break;
+			$this->error('Unsupported video source, quitting: ' . $video->video_source);
 		}
 
-		if (!$video->video_url)
-		{
-			$this->error('No video URL found, killing it');
+		$media = new $handler($video->video_id);
+
+		$video->video_title = $media->title();
+
+		if ($media->error()) {
+			$video->video_error         = true;
+			$video->video_error_message = $media->errorMessage();
+			$video->video_error_code    = $media->errorCode();
 			$video->save();
+
+			$this->notifyOfVideoError($video, $media);
+			$this->error('Error, quitting: ' . $media->errorMessage());
 			die();
 		}
+
+		$video->video_url = $media->fileUrl();
+
+		$this->push($video);
+	}
+
+	protected function notifyOfVideoError($video, $media)
+	{
+		$user   = \User::find($video->user_id);
+		$pusher = new PHPushbullet($user->pushbullet_token);
+
+		foreach ($user->devices as $device) {
+			$pusher->device($device->pushbullet_id)
+					->link('Error Pushing Video: ' . $media->title(), $media->webUrl(), $media->errorMessage());
+		}
+	}
+
+	protected function push($video)
+	{
+		$user   = \User::find($video->user_id);
+		$pusher = new PHPushbullet($user->pushbullet_token);
 
 		$this->info('Pushing <comment>' . $video->video_title . '</comment> offline...');
 
@@ -92,7 +119,12 @@ class OfflinerPushVideosCommand extends Command {
 
 			$video->pusher_id = $push_response['iden'];
 		} else {
-			$this->error('Pushing failed: ' . json_encode($push_response));
+			$notifier = new MacNotifier();
+			$title    = 'Pushing Failed';
+			$url      = 'http://steve.joe.codes';
+			$notifier->notify($title, json_encode($push_response), $url, 'com.apple.Automator');
+
+			$this->error($title . json_encode($push_response));
 		}
 
 		$video->save();
@@ -100,82 +132,19 @@ class OfflinerPushVideosCommand extends Command {
 		$this->comment('Donezo. Enjoy.');
 	}
 
-	private function handleYouTube($video)
+	protected function getHandler($source)
 	{
-		$youtube = new \Steve\External\YouTube;
+		switch ($source) {
+			case 'youtube':
+				return 'Steve\External\Media\YouTube';
+			break;
 
-		$this->info('Getting video info for video ID ' . $video->video_id);
-
-		$video_info = $youtube->getVideoInfo($video->video_id);
-
-		if (array_get($video_info, 'title')) {
-			$video->video_url   = $video_info['best_format']['url'];
-			$video->video_title = $video_info['title'];
-		} else {
-			$this->error('Problem getting video: ' . $video_info['error_message']);
-
-			$video->video_error = true;
-			$video->video_error_message = $video_info['error_message'];
-			$video->video_error_code = $video_info['error_code'];
-
-			$notifier = new MacNotifier();
-
-			$title = 'Problem Offlining Video';
-			$url   = 'https://www.youtube.com/watch?v=' . $video->video_id;
-
-			$notifier->notify($title, $video_info['error_message'], $url, 'com.apple.Automator');
+			case 'vimeo':
+				return 'Steve\External\Media\Vimeo';
+			break;
 		}
 
-		return $video;
-	}
-
-	private function handleVimeo($video)
-	{
-		$vimeo = new \Steve\External\Vimeo;
-
-		$this->info('Getting video info for video ID ' . $video->video_id);
-
-		$video_info = $vimeo->getVideoInfo($video->video_id);
-
-		if (array_get($video_info, 'title')) {
-			$video->video_url   = $video_info['url'];
-			$video->video_title = $video_info['title'];
-		} else {
-			$this->error('Problem getting video: ' . $video_info['error_message']);
-
-			$video->video_error = true;
-			$video->video_error_message = $video_info['error_message'];
-			$video->video_error_code = $video_info['error_code'];
-
-			$notifier = new MacNotifier();
-
-			$title = 'Problem Offlining Video';
-			$url   = 'http://player.vimeo.com/video/' . $video->video_id;
-
-			$notifier->notify($title, $video_info['error_message'], $url, 'com.apple.Automator');
-		}
-
-		return $video;
-	}
-
-	/**
-	 * Get the console command arguments.
-	 *
-	 * @return array
-	 */
-	protected function getArguments()
-	{
-		return [];
-	}
-
-	/**
-	 * Get the console command options.
-	 *
-	 * @return array
-	 */
-	protected function getOptions()
-	{
-		return [];
+		return false;
 	}
 
 }
