@@ -1,6 +1,6 @@
 <?php
 
-namespace Steve\External;
+namespace Steve\Notify;
 
 use Dropbox\Client;
 use League\Flysystem\Filesystem;
