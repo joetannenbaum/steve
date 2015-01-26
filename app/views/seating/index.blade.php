@@ -13,12 +13,20 @@
                 </li>
             @endforeach
         </ul>
-        <div id="save-wrapper">
+        <div id="save-wrapper" class="border-box">
             <a href="#" id="toggle-save">Save Seating</a>
             <div id="save-success">Good to go!<br />All saved.</div>
             <div id="save-form">
-                <input type="text" id="save-title" placeholder="Title" />
+                <input type="text" id="save-title" placeholder="Title (Optional)" />
                 <a href="#" id="save-submit">Save</a>
+            </div>
+        </div>
+
+        <div id="add-person" class="border-box">
+            <div id="add-person-success">Person added to the end of the list!</div>
+            <div id="add-person-form">
+                <input type="text" id="person-name" placeholder="Add Person" />
+                <a href="#" id="add-person-submit">Add</a>
             </div>
         </div>
 
@@ -36,7 +44,7 @@
             </div>
         @endforeach
 
-        <ul id="all-seating">
+        <ul id="all-seating" class="border-box">
         @foreach ($all_seating as $saved_seating)
             <li>
                 <a href="/sit-down/{{{ $saved_seating->id }}}">

@@ -13,19 +13,33 @@ body {
   text-decoration: none;
 }
 
-#save-wrapper {
-    margin-left: -90px
+.border-box {
+    margin-left: -90px;
+    margin-top: 20px;
+    border: 1px solid #eaeaea;
+    width: 275px;
+    padding: 10px;
+    box-sizing: border-box;
+    display: block;
+}
+
+#all-seating {
+    height: 200px;
+    overflow: auto;
+    li {
+        padding: 5px 0;
+    }
 }
 
 #save-form {
     display: none;
 
     input {
-        display: block;
+        display: inline-block;
     }
 }
 
-#save-success {
+#save-success, #add-person-success {
   display: none;
 }
 
@@ -36,6 +50,8 @@ body {
     margin-left: -90px;
     margin-top: 25px;
     font-size: 15px;
+    border: 1px solid #eaeaea;
+
     li {
         cursor: move;
         padding: 3px;
@@ -46,19 +62,6 @@ body {
         .remove {
             display: none;
         }
-    }
-}
-
-#all-seating {
-    position: absolute;
-    right: 25px;
-    bottom: 25px;
-    display: block;
-    height: 510px;
-    width: 600px;
-    overflow: auto;
-    li {
-        padding: 5px 0;
     }
 }
 

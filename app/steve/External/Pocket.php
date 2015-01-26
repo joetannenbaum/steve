@@ -19,12 +19,12 @@ class Pocket {
 		}
 	}
 
-	public function getVideos($params = [])
+	public function search($params = [])
 	{
 		$client = $this->getClient();
 
 		$res = $client->get('get', ['query' => $this->getParams($params)]);
-		return $res->json(['object' => true]);
+		return $res->json();
 	}
 
 	protected function getClient()
@@ -37,7 +37,6 @@ class Pocket {
 		$default = [
 				'consumer_key' => $this->consumer_key,
 				'access_token' => $this->access_token,
-				'contentType'  => 'video',
 				'detailType'   => 'complete',
 			];
 

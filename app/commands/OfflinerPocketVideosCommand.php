@@ -54,27 +54,28 @@ class OfflinerPocketVideosCommand extends Command {
 
 		\Log::info('Getting pocket videos since ' .  $since);
 
-		if ($since) {
-			$pocket_params = [
-				'since' => $since,
-			];
+		$pocket_params = ($since) ? ['since' => $since] : [];
 
-			$since = (is_int($since)) ? $since : strtotime($since);
+		$searches = [
+			['contentType' => 'video'],
+			['search' => 'soundcloud.com'],
+		];
 
-			$since_des = date('m/d/Y h:i:s A', $since);
-		} else {
-			$pocket_params = [];
-
-			$since_des = 'the beginning of time';
+		foreach ($searches as $params) {
+			$search_params = array_merge($pocket_params, $params);
+			$this->searchPocket($pocket, $search_params);
 		}
+	}
 
-		$this->info('Getting videos from Pocket since ' . $since_des . '...');
+	protected function searchPocket($pocket, $pocket_params)
+	{
+		$this->info('Searching Pocket for ' . json_encode($pocket_params) . '...');
 
-		$result = $pocket->getVideos($pocket_params);
+		$result = $pocket->search($pocket_params);
 
 		if (empty($result->list)) {
-			$this->comment('No videos = nothing to do! G\'bye.');
-			die();
+			$this->comment('No results = nothing to do! G\'bye.');
+			return false;
 		}
 
 		foreach ($result->list as $r) {
@@ -97,7 +98,8 @@ class OfflinerPocketVideosCommand extends Command {
 				} else if (str_contains($video->src, 'vimeo')) {
 					$src = 'vimeo';
 				}
-
+//iframe.*src="https:\/\/w\.soundcloud\.com\/player\/\?url=https%3A\/\/api\.soundcloud\.com\/tracks\/(\d+)
+				// "kind":"track","id":
 				if (!empty($src)) {
 					$record = \OfflinerVideo::firstOrNew([
 							'video_source' => $src,

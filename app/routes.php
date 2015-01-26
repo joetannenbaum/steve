@@ -121,3 +121,13 @@ Route::post('/sit-down', function() {
 
     return $seating->toArray();
 });
+
+Route::post('/sit-down/add-person', function() {
+    $params = Input::only(['name']);
+
+    $guest = Guest::create($params);
+
+    $guest->html = '<a href="#" class="remove">x</a> ' . $guest->name;
+
+    return $guest->toArray();
+});

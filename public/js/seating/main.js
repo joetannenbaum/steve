@@ -39,6 +39,40 @@ $(function() {
         return false;
     });
 
+    $("#add-person-submit").click(function() {
+        $.ajax({
+            url: "/sit-down/add-person",
+            type: "post",
+            dataType: "json",
+            data: {
+                name: $("#person-name").val()
+            },
+            success: function(r) {
+                var $li = $("<li />").html(r.html).attr("data-guest", r.id);
+
+                $li.appendTo("#guest-list");
+
+                $("#guest-list li").draggable({
+                  connectToSortable: ".available ul",
+                  helper: "clone",
+                  revert: "invalid",
+                  drag: function() {
+                    $("#tables").addClass("dragging");
+                  }
+                });
+
+                $("#add-person-form").fadeOut(function() {
+                    $(this).find("input").val("");
+                    $("#add-person-success").fadeIn().delay(3000).fadeOut(function() {
+                        $("#add-person-form").fadeIn();
+                    });
+                });
+            }
+        });
+
+        return false;
+    });
+
     $("#save-submit").click(function() {
 
         var tables = {};
