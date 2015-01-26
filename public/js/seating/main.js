@@ -63,7 +63,7 @@ $(function() {
 
                 $("#add-person-form").fadeOut(function() {
                     $(this).find("input").val("");
-                    $("#add-person-success").fadeIn().delay(3000).fadeOut(function() {
+                    $("#add-person-success").fadeIn().delay(1000).fadeOut(function() {
                         $("#add-person-form").fadeIn();
                     });
                 });
