@@ -28,6 +28,8 @@ class SoundCloud extends Media {
 				'message' => 'Unable to retrieve file.',
 				'code'    => 500,
         	];
+
+            return;
         }
 
         return [
