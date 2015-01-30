@@ -51,11 +51,6 @@ class OfflinerPushVideosCommand extends Command {
 			die();
 		}
 
-		if ($video->video_url) {
-			$this->push($video);
-			return;
-		}
-
 		$this->info('Getting video info for video ID ' . $video->video_id);
 
 		$handler = $this->getHandler($video->video_source);
@@ -146,6 +141,10 @@ class OfflinerPushVideosCommand extends Command {
 
 			case 'vimeo':
 				return 'Steve\External\Media\Vimeo';
+			break;
+
+			case 'soundcloud':
+				return 'Steve\External\Media\SoundCloud';
 			break;
 		}
 
