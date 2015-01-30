@@ -5,6 +5,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 
 use Carbon\Carbon;
+use Steve\External\Pocket;
 
 class OfflinerPocketVideosCommand extends Command {
 
@@ -21,6 +22,17 @@ class OfflinerPocketVideosCommand extends Command {
 	 * @var string
 	 */
 	protected $description = 'Scrape Pocket for any videos saved';
+
+	protected $searches = [
+		[
+			'params'  => ['contentType' => 'video'],
+			'handler' => 'Video',
+		],
+		[
+			'params'  => ['search' => 'soundcloud.com'],
+			'handler' => 'SoundCloud',
+		],
+	];
 
 	/**
 	 * Create a new command instance.
@@ -48,104 +60,29 @@ class OfflinerPocketVideosCommand extends Command {
 
 	protected function getVideos($user)
 	{
-		$pocket = new \Steve\External\Pocket($user->pocket_token);
-
-		$since = \OfflinerVideo::user($user->id)->max('pocket_since');
+		$pocket = new Pocket($user->pocket_token);
+		$since  = \OfflinerVideo::user($user->id)->max('pocket_since');
 
 		\Log::info('Getting pocket videos since ' .  $since);
 
-		$pocket_params = ($since) ? ['since' => $since] : [];
+		$params = ($since) ? ['since' => $since] : [];
 
-		$searches = [
-			['contentType' => 'video'],
-			['search' => 'soundcloud.com'],
-		];
+		foreach ($this->searches as $config) {
+			$search_params = array_merge($params, $config['params']);
 
-		foreach ($searches as $params) {
-			$search_params = array_merge($pocket_params, $params);
-			$this->searchPocket($pocket, $search_params);
-		}
-	}
+			$this->info('Searching Pocket for ' . json_encode($search_params) . '...');
 
-	protected function searchPocket($pocket, $pocket_params)
-	{
-		$this->info('Searching Pocket for ' . json_encode($pocket_params) . '...');
+			$result = $pocket->search($search_params);
 
-		$result = $pocket->search($pocket_params);
-
-		if (empty($result->list)) {
-			$this->comment('No results = nothing to do! G\'bye.');
-			return false;
-		}
-
-		foreach ($result->list as $r) {
-			// 0 means not deleted or archived
-			if ($r->status != 0) {
+			if (empty($result->list)) {
+				$this->comment('No results = nothing to do! G\'bye.');
 				continue;
 			}
 
-			if (empty($r->videos)) {
-				continue;
-			}
-
-			foreach ($r->videos as $video) {
-				if (empty($video->vid)) {
-					continue;
-				}
-
-				if (str_contains($video->src, 'youtube')) {
-					$src = 'youtube';
-				} else if (str_contains($video->src, 'vimeo')) {
-					$src = 'vimeo';
-				}
-//iframe.*src="https:\/\/w\.soundcloud\.com\/player\/\?url=https%3A\/\/api\.soundcloud\.com\/tracks\/(\d+)
-				// "kind":"track","id":
-				if (!empty($src)) {
-					$record = \OfflinerVideo::firstOrNew([
-							'video_source' => $src,
-							'video_id'     => $video->vid,
-						]);
-
-					if ($record->id) {
-						continue;
-					}
-
-					$this->info('Logging video <comment>' . $video->vid . '</comment>...');
-
-					\Log::info('New pocket since: ' . $result->since);
-
-					$record->fill([
-							'pocket_id'    => $r->item_id,
-							'pocket_since' => Carbon::createFromTimeStamp($result->since),
-							'user_id'      => $user->id,
-						]);
-
-					$record->save();
-				}
-			}
+			$handler_class = 'Steve\Archiver\\' . $config['handler'];
+			$handler = new $handler_class($result, $user);
+			$handler->archive();
 		}
-
-		$this->comment('Donezo. Enjoy.');
-	}
-
-	/**
-	 * Get the console command arguments.
-	 *
-	 * @return array
-	 */
-	protected function getArguments()
-	{
-		return [];
-	}
-
-	/**
-	 * Get the console command options.
-	 *
-	 * @return array
-	 */
-	protected function getOptions()
-	{
-		return [];
 	}
 
 }

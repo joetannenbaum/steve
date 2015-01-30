@@ -24,7 +24,7 @@ class Pocket {
 		$client = $this->getClient();
 
 		$res = $client->get('get', ['query' => $this->getParams($params)]);
-		return $res->json();
+		return $res->json(['object' => true]);
 	}
 
 	protected function getClient()
