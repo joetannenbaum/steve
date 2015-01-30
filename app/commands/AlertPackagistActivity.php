@@ -62,13 +62,17 @@ class AlertPackagistActivity extends Command {
 			$delta = $stats['package']['downloads']['total'] - array_get($downloads, 'total', 0);
 
 			if ($delta > 0) {
-				$body  = "{$stats['package']['downloads']['total']} (+{$delta})\n";
-				$body .= "{$stats['package']['downloads']['daily']} today, ";
-				$body .= "{$stats['package']['downloads']['monthly']} this month";
+				$downloads = $stats['package']['downloads'];
+				$title     = "{$package} (+{$delta})";
+				$body      = implode(', ', [
+								number_format($downloads['total']) . ' total',
+								number_format($downloads['daily']) . ' today',
+								number_format($downloads['monthly']) . ' month',
+							]);
 
 				$this->info('Notifying packagist activity: ' . $package);
 
-				$pusher->channel('joes-packagist-activity')->link($package, $body, $base_url . $package);
+				$pusher->channel('joes-packagist-activity')->link($title, $body, $base_url . $package);
 
 				Cache::tags('package-activity')->put($key, ['downloads' => ['total' => $stats['package']['downloads']['total']]], 600);
 			}
