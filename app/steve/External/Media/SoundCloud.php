@@ -40,7 +40,7 @@ class SoundCloud extends Media {
         try {
             $res = $client->get("https://api.soundcloud.com/tracks", [
                     'query' => array_merge(['ids' => $this->media_id], $creds),
-                ]]);
+                ]);
 
             $info = $res->json(['object' => true])[0];
 
