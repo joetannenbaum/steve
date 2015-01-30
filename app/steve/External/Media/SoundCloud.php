@@ -39,12 +39,12 @@ class SoundCloud extends Media {
 
         try {
             $res = $client->get("https://api.soundcloud.com/tracks", [
-                    'query' => array_merge(['ids' => $id], $creds),
+                    'query' => array_merge(['ids' => $media_id], $creds),
                 ]   );
 
             $info = $res->json(['object' => true])[0];
 
-            $res = $client->get("https://api.soundcloud.com/tracks/{$id}/streams", ['query' => $creds]);
+            $res = $client->get("https://api.soundcloud.com/tracks/{$media_id}/streams", ['query' => $creds]);
             $files = $res->json(['object' => true]);
         } catch (\Exception $e) {
             $this->error = [
