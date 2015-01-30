@@ -3,7 +3,8 @@
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
-use Steve\Notify\MacNotifier;
+use PHPushbullet\PHPushbullet;
+use GuzzleHttp\Client;
 
 class AlertPackagistActivity extends Command {
 
@@ -38,11 +39,14 @@ class AlertPackagistActivity extends Command {
 	 */
 	public function fire()
 	{
-		$client   = new \GuzzleHttp\Client();
-		$notifier = new MacNotifier();
+		$user = User::joe()->first();
+		$pusher = new PHPushbullet($user->pushbullet_token);
+		$client   = new Client();
 
 		$packages = [
 				'league/climate',
+				'joetannenbaum/mr-clean',
+				'joetannenbaum/phpushbullet',
 			];
 
 		$base_url = 'https://packagist.org/packages/';
@@ -58,11 +62,13 @@ class AlertPackagistActivity extends Command {
 			$delta = $stats['package']['downloads']['total'] - array_get($downloads, 'total', 0);
 
 			if ($delta > 0) {
-				$body  = "📦 {$stats['package']['downloads']['total']} (+{$delta})\n";
+				$body  = "{$stats['package']['downloads']['total']} (+{$delta})\n";
 				$body .= "{$stats['package']['downloads']['daily']} today, ";
 				$body .= "{$stats['package']['downloads']['monthly']} this month";
 
-				$notifier->notify($package, $body, $base_url . $package, 'com.github.GitHub');
+				$this->info('Notifying packagist activity: ' . $package);
+
+				$pusher->channel('joes-packagist-activity')->link($package, $body, $base_url . $package);
 
 				Cache::tags('package-activity')->put($key, ['downloads' => ['total' => $stats['package']['downloads']['total']]], 600);
 			}

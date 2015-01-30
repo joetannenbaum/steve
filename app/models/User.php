@@ -19,4 +19,9 @@ class User extends Eloquent {
         return $this->hasMany('PushbulletDevice');
     }
 
+    public function scopeJoe($query)
+    {
+        return $query->where('pocket_username', 'jtannenbaum');
+    }
+
 }
