@@ -3,7 +3,8 @@
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
-use Steve\Notify\MacNotifier;
+use PHPushbullet\PHPushbullet;
+use GuzzleHttp\Client;
 
 class AlertGithubActivity extends Command {
 
@@ -38,7 +39,7 @@ class AlertGithubActivity extends Command {
 	 */
 	public function fire()
 	{
-		$client = new \GuzzleHttp\Client();
+		$client = new Client();
 
 		$params = [
 				'headers' => [ 'Authorization' => 'token ' . getenv('github.access_token') ],
@@ -74,8 +75,8 @@ class AlertGithubActivity extends Command {
 		}
 
 		if ($changed) {
-
-			$notifier = new MacNotifier();
+			$user   = User::joe()->first();
+			$pusher = new PHPushbullet($user->pushbullet_token);
 
 			foreach ($changed as $repo => $changes) {
 				foreach ($changes as $key => $value) {
@@ -88,7 +89,7 @@ class AlertGithubActivity extends Command {
 					$title = $repo;
 					$body  = $emoji . ' ' . $value['total'] . ' (+' . $value['delta'] . ')';
 
-					$notifier->notify($title, $body, $value['url'], 'com.github.GitHub');
+					$pusher->channel('joes-github-activity')->link($title, $body, $value['url']);
 				}
 			}
 		}

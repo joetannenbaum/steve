@@ -39,9 +39,9 @@ class AlertPackagistActivity extends Command {
 	 */
 	public function fire()
 	{
-		$user = User::joe()->first();
+		$user   = User::joe()->first();
 		$pusher = new PHPushbullet($user->pushbullet_token);
-		$client   = new Client();
+		$client = new Client();
 
 		$packages = [
 				'league/climate',
