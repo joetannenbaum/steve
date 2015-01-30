@@ -8,20 +8,52 @@ class SoundCloud extends Media {
 	{
         $client = new \GuzzleHttp\Client;
 
-        $res = $client->get("https://api.soundcloud.com/tracks", ['query' => [
-                'ids'         => $this->media_id,
-                'client_id'   => 'b45b1aa10f1ac2941910a7f0d10f8e28',
-                'app_version' => 'acf910a',
-            ]]);
+        list($media_id, $url) = explode('|', $this->media_id);
 
-        $info = $res->json(['object' => true])[0];
+        try {
+            $res = $client->get($url);
+        } catch (\Exception $e) {
+            $this->error = [
+                'message' => 'Problem retrieving page.',
+                'code'    => 500,
+            ];
 
-        $res = $client->get("https://api.soundcloud.com/tracks/{$this->media_id}/streams", ['query' => [
-                'client_id'   => 'b45b1aa10f1ac2941910a7f0d10f8e28',
-                'app_version' => 'acf910a',
-            ]]);
+            return;
+        }
 
-        $files = $res->json(['object' => true]);
+        preg_match('/window.__sc_version = "(\w+)"/', (string) $res->getBody(), $matches);\
+
+        if (empty($matches)) {
+            $this->error = [
+                'message' => 'Problem parsing page.',
+                'code'    => 500,
+            ];
+
+            return;
+        }
+
+        $creds = [
+            'client_id'   => 'b45b1aa10f1ac2941910a7f0d10f8e28',
+            'app_version' => $matches[1],
+        ];
+
+        try {
+            $res = $client->get("https://api.soundcloud.com/tracks", [
+                    'query' => array_merge(['ids' => $this->media_id], $creds),
+                ]]);
+
+            $info = $res->json(['object' => true])[0];
+
+            $res = $client->get("https://api.soundcloud.com/tracks/{$this->media_id}/streams", ['query' => $creds]);
+            $files = $res->json(['object' => true]);
+        } catch (\Exception $e) {
+            $this->error = [
+                'message' => $e->getMessage(),
+                'code'    => $e->getStatusCode(),
+            ];
+
+            return;
+        }
 
         if (empty($files->http_mp3_128_url)) {
         	$this->error = [

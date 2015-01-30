@@ -23,7 +23,7 @@ class SoundCloud extends Archiver {
             if (!empty($matches)) {
                 $record = \OfflinerVideo::firstOrNew([
                         'video_source' => 'soundcloud',
-                        'video_id'     => $matches[1],
+                        'video_id'     => $matches[1] . '|' . $result->resolved_url,
                     ]);
 
                 if ($record->id) {
