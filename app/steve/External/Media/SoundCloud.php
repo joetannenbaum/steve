@@ -21,7 +21,7 @@ class SoundCloud extends Media {
             return;
         }
 
-        preg_match('/window.__sc_version = "(\w+)"/', (string) $res->getBody(), $matches);\
+        preg_match('/window.__sc_version = "(\w+)"/', (string) $res->getBody(), $matches);
 
         if (empty($matches)) {
             $this->error = [
