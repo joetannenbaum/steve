@@ -39,6 +39,8 @@ class CacheRokuScreensaver extends Command {
 	{
 		$this->info('Contacting Dropbox...');
 
+		$previous_cache = \Cache::get('roku-screensaver');
+
 		$client = new \GuzzleHttp\Client(['base_url' => 'https://api.dropbox.com/1/']);
 
 		$response = $client->get('metadata/auto/Photos%2FRoku%20Screensaver', [
@@ -47,7 +49,7 @@ class CacheRokuScreensaver extends Command {
 				],
 				'query' => [
 					'locale'     => '',
-					'list'       => TRUE,
+					'list'       => true,
 					'file_limit' => 25000,
 				]
 			]);
@@ -58,10 +60,15 @@ class CacheRokuScreensaver extends Command {
 
 		$cache_photos = [];
 
-		$this->info('Found ' . count( $photos ) . ' photos...');
+		$this->info('Found ' . count($photos) . ' photos...');
 
-		foreach ( $photos as $p )
-		{
+		foreach ($photos as $p) {
+
+			if ($cached = $this->getFromCache($previous_cache, $p['path'])) {
+				$cache_photos[] = $cached;
+				continue;
+			}
+
 			$response = $client->get('media/dropbox' . $p['path'], [
 					'headers' => [
 						'Authorization' => 'Bearer ' . getenv('dropbox.access_token'),
@@ -70,24 +77,35 @@ class CacheRokuScreensaver extends Command {
 
 			$photo = $response->json();
 
-			$this->info('Downloading ' . $photo['url'] . '...' );
+			$this->info('Downloading ' . $photo['url'] . '...');
 
-			$new_file_path = 'images/roku-screensaver/' . last( explode( '/', $photo['url'] ) );
+			$new_file_path = 'images/roku-screensaver/' . last(explode('/', $photo['url']));
 
-			file_put_contents( public_path( $new_file_path ), file_get_contents( $photo['url'] ) );
+			file_put_contents(public_path($new_file_path), file_get_contents($photo['url']));
 
-			$photo_info = getimagesize( public_path( $new_file_path ) );
+			$photo_info = getimagesize(public_path($new_file_path));
 
 			$cache_photos[] = [
-					'url'    => asset( $new_file_path ),
+					'url'    => asset($new_file_path),
 					'width'  => $photo_info[ 0 ],
 					'height' => $photo_info[ 1 ],
 				];
 		}
 
-		\Cache::put( 'roku-screensaver', $cache_photos, \Carbon\Carbon::now()->addHours(12) );
+		\Cache::put('roku-screensaver', $cache_photos, \Carbon\Carbon::now()->addHours(12));
 
 		$this->info('Cached.');
+	}
+
+	protected function getFromCache($cached, $path)
+	{
+		$filename = urlencode(pathinfo($path, PATHINFO_BASENAME));
+		foreach ($cached as $photo) {
+			if ($filename == pathinfo($photo['url'], PATHINFO_BASENAME)) {
+				$this->info('Found in cache: ' . $photo['url']);
+				return $photo;
+			}
+		}
 	}
 
 }
