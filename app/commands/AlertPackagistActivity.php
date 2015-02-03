@@ -75,6 +75,9 @@ class AlertPackagistActivity extends Command {
 				$pusher->channel('joes-packagist-activity')->link($title, $body, $base_url . $package);
 
 				Cache::tags('package-activity')->put($key, ['downloads' => ['total' => $stats['package']['downloads']['total']]], 600);
+			} else {
+				// Just recache the last one so we get an actual delta every time
+				Cache::tags('package-activity')->put($key, $previous, 600);
 			}
 
 		}
