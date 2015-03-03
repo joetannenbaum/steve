@@ -29,6 +29,30 @@ Route::get('authorize-offliner', function() {
     return Redirect::to($pocket->getAuthUrl());
 });
 
+Route::get('download-sc', function() {
+    $client = new \GuzzleHttp\Client;
+    $url    = Input::get('url');
+    $res    = $client->get($url);
+
+    $pattern = '/https:\/\/w\.soundcloud\.com\/player\/\?url=https%3A%2F%2Fapi.soundcloud.com%2Ftracks%2F(\d+)/';
+    preg_match($pattern, (string) $res->getBody(), $matches);
+
+    if (empty($matches)) {
+        die('Unable to get it, lo siento.');
+    }
+
+    $sc_id = $matches[1] . '|' . $url;
+
+    $media = new Steve\External\Media\SoundCloud($sc_id);
+
+    $filename = ltrim(str_replace('/', '-', parse_url($url, PHP_URL_PATH)), '-') . '.mp3';
+    $filepath = storage_path($filename);
+
+    file_put_contents($filepath, file_get_contents($media->fileUrl()));
+
+    return Response::download($filepath);
+});
+
 Route::get('pocket-authorized', function() {
     $pocket = new \Steve\External\Pocket();
 
