@@ -48,45 +48,39 @@ class YouTube extends Media {
 			]);
 		}
 
-		$url = 'http://www.youtube.com/get_video_info?' . http_build_query($params);
+        $client = new \GuzzleHttp\Client;
+        $result = $client->get('http://www.youtube.com/get_video_info', ['query' => $params]);
 
-		$ch = curl_init();
-	    curl_setopt($ch , CURLOPT_URL , $url);
-	    curl_setopt($ch , CURLOPT_RETURNTRANSFER , 1);
-	    curl_setopt($ch , CURLOPT_CONNECTTIMEOUT , 3);
-	    $tmp = curl_exec($ch);
-	    curl_close($ch);
-
-	    return $tmp;
+	    return (string) $result->getBody();
 	}
 	protected function parseInfo($garbage)
 	{
 	    parse_str($garbage, $video_info);
 
-	    if (array_get($video_info, 'url_encoded_fmt_stream_map')) {
-	    	$tmp_formats = explode(',', $video_info['url_encoded_fmt_stream_map']);
-
-	    	$formats = [];
-
-	    	foreach($tmp_formats as $tf) {
-	    		parse_str($tf, $form);
-
-	    		$form['url'] = urldecode($form['url']);
-
-	    		parse_str($form['url'], $form['url_attr']);
-
-	    		$formats[] = $form;
-	    	}
-
-			$video_info['formats']     = $formats;
-			$video_info['best_format'] = head($formats);
-	    } else {
+	    if (!array_get($video_info, 'url_encoded_fmt_stream_map')) {
 	    	return [
 					'error'   => true,
 					'message' => array_get($video_info, 'reason'),
 					'code'    => array_get($video_info, 'errorcode'),
 	    		];
-	    }
+    	}
+
+    	$tmp_formats = explode(',', $video_info['url_encoded_fmt_stream_map']);
+
+    	$formats = [];
+
+    	foreach($tmp_formats as $tf) {
+    		parse_str($tf, $form);
+
+    		$form['url'] = urldecode($form['url']);
+
+    		parse_str($form['url'], $form['url_attr']);
+
+    		$formats[] = $form;
+    	}
+
+		$video_info['formats']     = $formats;
+		$video_info['best_format'] = head($formats);
 
 	    return $video_info;
 	}

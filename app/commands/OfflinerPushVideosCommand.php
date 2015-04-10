@@ -53,16 +53,14 @@ class OfflinerPushVideosCommand extends Command {
 
 		$this->info('Getting video info for video ID ' . $video->video_id);
 
-		$handler = $this->getHandler($video->video_source);
-
-		if (!$handler) {
+		if (!($handler = $this->getHandler($video->video_source))) {
 			$notifier = new MacNotifier();
 			$notifier->notify('Unsupported video source, quitting: ' . $video->video_source, null, null, 'com.apple.Automator');
 
 			$this->error('Unsupported video source, quitting: ' . $video->video_source);
 		}
 
-		$media = new $handler($video->video_id);
+		$media = new $handler($video->video_source);
 
 		$video->video_title = $media->title();
 
@@ -134,21 +132,7 @@ class OfflinerPushVideosCommand extends Command {
 
 	protected function getHandler($source)
 	{
-		switch ($source) {
-			case 'youtube':
-				return 'Steve\External\Media\YouTube';
-			break;
-
-			case 'vimeo':
-				return 'Steve\External\Media\Vimeo';
-			break;
-
-			case 'soundcloud':
-				return 'Steve\External\Media\SoundCloud';
-			break;
-		}
-
-		return false;
+		return 'Steve\External\Media\General';
 	}
 
 }

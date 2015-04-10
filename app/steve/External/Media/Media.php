@@ -4,16 +4,16 @@ namespace Steve\External\Media;
 
 abstract class Media {
 
-    protected $media_id;
+    protected $source;
 
     protected $media = [];
 
     protected $error;
 
-    public function __construct($media_id)
+    public function __construct($source)
     {
-        $this->media_id = $media_id;
-        $this->media    = $this->getInfo();
+        $this->source = $source;
+        $this->media  = $this->getInfo();
     }
 
     abstract public function webUrl();

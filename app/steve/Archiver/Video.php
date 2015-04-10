@@ -45,21 +45,15 @@ class Video extends Archiver {
     protected function usableVideos($videos)
     {
         foreach ($this->validVideos($videos) as $video) {
-            foreach (['youtube', 'vimeo'] as $video_src) {
-                if (str_contains($video->src, $video_src)) {
-                    $video->src_name = $video_src;
-                    yield $video;
-                }
-            }
+            $video->src_name = $video->src;
+            yield $video;
         }
     }
 
     protected function validVideos($videos)
     {
         foreach ($videos as $video) {
-            if (!empty($video->vid)) {
-                yield $video;
-            }
+            yield $video;
         }
     }
 

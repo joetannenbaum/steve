@@ -55,18 +55,20 @@ class SoundCloud extends Media {
             return;
         }
 
-        if (empty($files->http_mp3_128_url)) {
-        	$this->error = [
-				'message' => 'Unable to retrieve file.',
-				'code'    => 500,
-        	];
+    //     if (empty($files->http_mp3_128_url)) {
+    //     	$this->error = [
+				// 'message' => 'Unable to retrieve file.',
+				// 'code'    => 500,
+    //     	];
 
-            return;
-        }
+    //         return;
+    //     }
+
+        dd($files);
 
         return [
 			'title'    => $info->title,
-			'file_url' => $files->http_mp3_128_url,
+			'file_url' => $files->rtmp_mp3_128_url,
 			'web_url'  => $info->permalink_url,
         ];
 	}
