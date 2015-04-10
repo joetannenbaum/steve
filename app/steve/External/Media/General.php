@@ -9,6 +9,8 @@ class General extends Media {
 		$info = exec("youtube-dl '{$this->source}' --simulate --print-json");
 		$info = json_decode($info);
 
+		var_dump('here it is', $info);
+
 		if ($info === null) {
 			$this->error = 'Invalid video type.';
 		}
