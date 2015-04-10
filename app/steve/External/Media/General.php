@@ -6,7 +6,7 @@ class General extends Media {
 
 	public function getInfo()
 	{
-		$info = exec("youtube-dl {$this->source} --simulate --print-json");
+		$info = exec("youtube-dl '{$this->source}' --simulate --print-json");
 		$info = json_decode($info);
 
 		if ($info === null) {
