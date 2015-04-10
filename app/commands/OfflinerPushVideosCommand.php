@@ -62,8 +62,6 @@ class OfflinerPushVideosCommand extends Command {
 
 		$media = new $handler($video->video_source);
 
-		$video->video_title = $media->title();
-
 		if ($media->error()) {
 			$video->video_error         = true;
 			$video->video_error_message = $media->errorMessage();
@@ -75,6 +73,7 @@ class OfflinerPushVideosCommand extends Command {
 			die();
 		}
 
+		$video->video_title = $media->title();
 		$video->video_url = $media->fileUrl();
 
 		$this->push($video);
