@@ -12,7 +12,6 @@ class Video extends Archiver {
             foreach ($this->usableVideos($result->videos) as $video) {
                 $record = \OfflinerVideo::firstOrNew([
                         'video_source' => $video->src_name,
-                        'video_id'     => $video->vid,
                     ]);
 
                 if ($record->id) {
