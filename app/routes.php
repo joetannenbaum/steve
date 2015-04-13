@@ -30,25 +30,12 @@ Route::get('authorize-offliner', function() {
 });
 
 Route::get('download-sc', function() {
-    $client = new \GuzzleHttp\Client;
-    $url    = Input::get('url');
-    $res    = $client->get($url);
+    $download_url = exec("youtube-dl '" . Input::get('url') . "' --get-url");
+    $extension    = pathinfo($download_url, PATHINFO_EXTENSION);
 
-    $pattern = '/https:\/\/w\.soundcloud\.com\/player\/\?url=https%3A%2F%2Fapi.soundcloud.com%2Ftracks%2F(\d+)/';
-    preg_match($pattern, (string) $res->getBody(), $matches);
+    $filepath = storage_path(time() . '.' . $extension);
 
-    if (empty($matches)) {
-        die('Unable to get it, lo siento.');
-    }
-
-    $sc_id = $matches[1] . '|' . $url;
-
-    $media = new Steve\External\Media\SoundCloud($sc_id);
-
-    $filename = ltrim(str_replace('/', '-', parse_url($url, PHP_URL_PATH)), '-') . '.mp3';
-    $filepath = storage_path($filename);
-
-    file_put_contents($filepath, file_get_contents($media->fileUrl()));
+    file_put_contents($filepath, file_get_contents($download_url));
 
     return Response::download($filepath);
 });
