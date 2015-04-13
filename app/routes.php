@@ -32,9 +32,11 @@ Route::get('authorize-offliner', function() {
 Route::get('download-sc', function() {
     $download_url = exec("youtube-dl '" . Input::get('url') . "' --get-url");
     $extension    = pathinfo($download_url, PATHINFO_EXTENSION);
-    var_dump($download_url, $extension); die();
+    $extension    = head(explode('?', $extension));
 
     $filepath = storage_path(time() . '.' . $extension);
+
+    dd($filepath);
 
     file_put_contents($filepath, file_get_contents($download_url));
 
