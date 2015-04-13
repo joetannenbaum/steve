@@ -34,7 +34,8 @@ Route::get('download-sc', function() {
     $extension    = pathinfo($download_url, PATHINFO_EXTENSION);
     $extension    = head(explode('?', $extension));
 
-    $filepath = storage_path(time() . '.' . $extension);
+    $filepath = pathinfo(Input::get('url'), PATHINFO_BASENAME) . '.' . $extension;
+    $filepath = storage_path($filepath);
 
     file_put_contents($filepath, file_get_contents($download_url));
 
