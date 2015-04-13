@@ -36,7 +36,7 @@ Route::get('download-sc', function() {
 
     $filepath = storage_path(time() . '.' . $extension);
 
-    dd(file_put_contents($filepath, file_get_contents($download_url)));
+    file_put_contents($filepath, file_get_contents($download_url));
 
     return Response::download($filepath);
 });
