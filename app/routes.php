@@ -30,14 +30,50 @@ Route::get('authorize-offliner', function() {
 });
 
 Route::get('download-sc', function() {
-    $download_url = exec("youtube-dl '" . Input::get('url') . "' --get-url");
-    $extension    = pathinfo($download_url, PATHINFO_EXTENSION);
-    $extension    = head(explode('?', $extension));
+    $init_url  = Input::get('url');
+    $info      = json_decode(exec("youtube-dl '" . $init_url . "' --print-json --simulate"));
+    $track     = json_decode(file_get_contents('http://api.soundcloud.com/tracks/' . $info->display_id . '.json?client_id=1d2f986c5cce33fc3e960088caf6aea7'));
+    $artist    = json_decode(file_get_contents('http://api.soundcloud.com/users/' . $track->user->id . '.json?client_id=1d2f986c5cce33fc3e960088caf6aea7'));
+    $extension = head(explode('?', pathinfo($info->url, PATHINFO_EXTENSION))) ?: 'mp3';
 
-    $filepath = pathinfo(Input::get('url'), PATHINFO_BASENAME) . '.' . $extension;
-    $filepath = storage_path($filepath);
+    $art = $info->thumbnail ?: str_replace('-large.jpg', '-t500x500.jpg', $artist->avatar_url);
 
-    file_put_contents($filepath, file_get_contents($download_url));
+    $filepath = storage_path(pathinfo($init_url, PATHINFO_BASENAME) . '.' . $extension);
+    $art_path = storage_path(pathinfo($art, PATHINFO_BASENAME));
+
+    file_put_contents($filepath, file_get_contents($info->url));
+    file_put_contents($art_path, file_get_contents($art));
+
+    require_once app_path('../lib/getid3/getid3.php');
+    require_once app_path('../lib/getid3/write.php');
+
+    $tagwriter                    = new getid3_writetags;
+    $tagwriter->filename          = $filepath;
+    $tagwriter->tagformats        = ['id3v2.3'];
+    $tagwriter->overwrite_tags    = true;
+    $tagwriter->tag_encoding      = 'UTF-8';
+    $tagwriter->remove_other_tags = true;
+
+    $tag_data['title'][]  = $info->title;
+    $tag_data['artist'][] = $artist->full_name;
+    $tag_data['year'][]   = date('Y', strtotime($track->created_at));
+    $tag_data['genre'][]  = $track->genre;
+
+    if ($fd = @fopen($art_path, 'rb')) {
+        $tag_data['attached_picture'] = [
+            [
+                'data'          => fread($fd, filesize($art_path)),
+                'picturetypeid' => 0x03, // 'Cover (front)'
+                'description'   => 'Cover',
+                'mime'          => 'image/jpeg',
+            ]
+        ];
+
+        fclose($fd);
+    }
+
+    $tagwriter->tag_data = $tag_data;
+    $tagwriter->WriteTags();
 
     return Response::download($filepath);
 });
