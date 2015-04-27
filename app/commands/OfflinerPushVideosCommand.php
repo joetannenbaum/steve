@@ -131,6 +131,10 @@ class OfflinerPushVideosCommand extends Command {
 
 	protected function getHandler($source)
 	{
+		if (strstr($course, 'soundcloud')) {
+			return 'Steve\External\Media\SoundCloud';
+		}
+
 		return 'Steve\External\Media\General';
 	}
 

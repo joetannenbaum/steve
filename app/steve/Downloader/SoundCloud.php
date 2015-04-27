@@ -9,13 +9,15 @@ class SoundCloud {
 
     protected $tag_writer;
 
-    protected $info;
+    protected $tracks = [];
 
     protected $client;
 
     protected $track;
 
     protected $artist;
+
+    protected $files = [];
 
     public function __construct()
     {
@@ -45,42 +47,65 @@ class SoundCloud {
 
     public function download($url)
     {
-        $this->getInfo($url);
+        $this->getTracks($url);
 
-        $audio_path = $this->downloadAudioFile();
-        $art_path   = $this->downloadArtFile();
+        foreach ($this->tracks as $track) {
+            $this->getTrackInfo($track);
 
-        $this->tag_writer->filename = $audio_path;
+            $audio_path = $this->downloadAudioFile($track);
+            $art_path   = $this->downloadArtFile($track);
 
-        $tag_data = [
-            'title'  => [$this->info->title],
-            'artist' => [$this->artist->full_name],
-            'year'   => [(new Carbon($this->track->created_at))->format('Y')],
-            'genre'  => [$this->track->genre],
-        ];
+            $this->tag_writer->filename = $audio_path;
 
-        if ($fd = @fopen($art_path, 'rb')) {
-            $tag_data['attached_picture'] = [
-                [
-                    'data'          => fread($fd, filesize($art_path)),
-                    'picturetypeid' => 0x03, // 'Cover (front)'
-                    'description'   => 'Cover',
-                    'mime'          => 'image/jpeg',
-                ]
+            $tag_data = [
+                'title'  => [$track->title],
+                'artist' => [$this->artist->full_name],
+                'year'   => [(new Carbon($this->track->created_at))->format('Y')],
+                'genre'  => [$this->track->genre],
             ];
 
-            fclose($fd);
+            if ($fd = @fopen($art_path, 'rb')) {
+                $tag_data['attached_picture'] = [
+                    [
+                        'data'          => fread($fd, filesize($art_path)),
+                        'picturetypeid' => 0x03, // 'Cover (front)'
+                        'description'   => 'Cover',
+                        'mime'          => 'image/jpeg',
+                    ]
+                ];
+
+                fclose($fd);
+            }
+
+            $this->tag_writer->tag_data = $tag_data;
+            $this->tag_writer->WriteTags();
+
+            $this->files[] = $audio_path;
         }
 
-        $this->tag_writer->tag_data = $tag_data;
-        $this->tag_writer->WriteTags();
+        if (count($this->files) === 1) {
+            return \Response::download(head($this->files));
+        }
 
-        return \Response::download($audio_path);
+        $zip = new \ZipArchive();
+        $zip_filename = storage_path(head($this->tracks)->playlist_title . '.zip');
+
+        if ($zip->open($zip_filename, \ZipArchive::CREATE) !== true) {
+            throw new \Exception("Cannot open {$zip_filename}");
+        }
+
+        foreach ($this->files as $file) {
+            $zip->addFile($file, pathinfo($file, PATHINFO_BASENAME));
+        }
+
+        $zip->close();
+
+        return \Response::download($zip_filename);
     }
 
-    protected function downloadArtFile()
+    protected function downloadArtFile($track)
     {
-        $art  = $this->getArtUrl();
+        $art  = $this->getArtUrl($track);
         $path = storage_path(pathinfo($art, PATHINFO_BASENAME));
 
         file_put_contents($path, file_get_contents($art));
@@ -88,29 +113,34 @@ class SoundCloud {
         return $path;
     }
 
-    protected function downloadAudioFile()
+    protected function downloadAudioFile($track)
     {
-        $path = storage_path(\Str::slug($this->info->title) . '.' . $this->getAudioExtension());
+        $path = storage_path(\Str::slug($track->title) . '.' . $this->getAudioExtension($track));
 
-        file_put_contents($path, file_get_contents($this->info->url));
+        file_put_contents($path, file_get_contents($track->url));
 
         return $path;
     }
 
-    protected function getInfo($url)
+    protected function getTracks($url)
     {
-        $this->info   = json_decode(exec("youtube-dl '" . $url . "' --print-json --simulate"));
+        exec("youtube-dl '" . $url . "' --print-json --simulate", $output);
 
-        $track        = $this->client->get('/tracks/' . $this->info->display_id . '.json');
+        $this->tracks = array_map('json_decode', $output);
+    }
+
+    protected function getTrackInfo($current)
+    {
+        $track        = $this->client->get('/tracks/' . $current->display_id . '.json');
         $this->track  = $track->json(['object' => true]);
 
         $artist       = $this->client->get('/users/' . $this->track->user->id . '.json');
         $this->artist = $artist->json(['object' => true]);
     }
 
-    protected function getAudioExtension()
+    protected function getAudioExtension($track)
     {
-        return head(explode('?', pathinfo($this->info->url, PATHINFO_EXTENSION))) ?: 'mp3';
+        return head(explode('?', pathinfo($track->url, PATHINFO_EXTENSION))) ?: 'mp3';
     }
 
     protected function getArtistArt()
@@ -118,8 +148,8 @@ class SoundCloud {
         return str_replace('-large.jpg', '-t500x500.jpg', $this->artist->avatar_url);
     }
 
-    protected function getArtUrl()
+    protected function getArtUrl($track)
     {
-        return $this->info->thumbnail ?: $this->getArtistArt();
+        return $track->thumbnail ?: $this->getArtistArt();
     }
 }

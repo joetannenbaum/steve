@@ -38,7 +38,7 @@ class CleanUpDownloadedFiles extends Command {
 	 */
 	public function fire()
 	{
-		$paths       = storage_path('*.{mp3,jpg}');
+		$paths       = storage_path('*.{mp3,jpg,zip}');
 		$cutoff_time = (new Carbon)->subHour();
 
 		foreach (glob($paths, GLOB_BRACE) as $filename) {
