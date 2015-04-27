@@ -49,7 +49,7 @@ class SoundCloud {
     {
         $this->getTracks($url);
 
-        foreach ($this->tracks as $track) {
+        foreach ($this->tracks as $key => $track) {
             $this->getTrackInfo($track);
 
             $audio_path = $this->downloadAudioFile($track);
@@ -62,6 +62,8 @@ class SoundCloud {
                 'artist' => [$this->artist->full_name],
                 'year'   => [(new Carbon($this->track->created_at))->format('Y')],
                 'genre'  => [$this->track->genre],
+                'album'  => [object_get($track, 'playlist_title')],
+                'track'  => [++$key],
             ];
 
             if ($fd = @fopen($art_path, 'rb')) {
