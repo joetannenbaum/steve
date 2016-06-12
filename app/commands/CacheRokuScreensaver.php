@@ -85,7 +85,7 @@ class CacheRokuScreensaver extends Command
             $photo_info = getimagesize(public_path($new_file_path));
 
             $cache_photos[] = [
-                    'url'    => asset($new_file_path),
+                    'url'    => asset($new_file_path, true),
                     'width'  => $photo_info[ 0 ],
                     'height' => $photo_info[ 1 ],
                 ];
